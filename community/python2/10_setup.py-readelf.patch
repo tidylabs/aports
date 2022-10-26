@@ -1,0 +1,13 @@
+--- a/setup.py
++++ b/setup.py
+@@ -773,8 +773,8 @@
+         readline_termcap_library = ""
+         curses_library = ""
+         # Determine if readline is already linked against curses or tinfo.
+-        if do_readline and find_executable('ldd'):
+-            fp = os.popen("ldd %s" % do_readline)
++        if do_readline and find_executable('readelf'):
++            fp = os.popen("readelf -d %s" % do_readline)
+             ldd_output = fp.readlines()
+             ret = fp.close()
+             if ret is None or ret >> 8 == 0:

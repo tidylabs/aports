@@ -1,0 +1,118 @@
+# Contributor: Justin Klaassen <jck112@users.noreply.github.com>
+# Maintainer: Justin Klaassen <jck112@users.noreply.github.com>
+pkgname=python2
+pkgver=2.7.18
+pkgrel=0
+pkgdesc="A high-level scripting language"
+url="https://www.python.org"
+arch="all"
+license="https://docs.python.org/2/license.html"
+subpackages="
+    ${pkgname}-dbg
+    ${pkgname}-dev
+    ${pkgname}-doc
+    "
+if [ "${CBUILD}" != "${CHOST}" ]; then
+    options="!check" # can't run cross platform
+
+    # host package is required for cross building
+    makedepends_build="${pkgname}-dev=${pkgver}-r${pkgrel}"
+fi
+makedepends_host="
+    bzip2-dev
+    expat-dev
+    libffi-dev
+    linux-headers
+    ncurses-dev
+    openssl1.1-compat-dev
+    readline-dev
+    sqlite-dev
+    zlib-dev
+    "
+source="
+    https://www.python.org/ftp/python/${pkgver}/Python-${pkgver}.tar.xz
+    00_musl-find_library.patch
+    05_unchecked-ioctl.patch
+    10_setup.py-readelf.patch
+    15_Makefile.pre.in-compileall.py.patch
+    20_cve-2021-3177.patch
+    "
+builddir="${srcdir}/Python-${pkgver}"
+_pydir="python${pkgver%.*}" # e.g. 'python2.7'
+
+build() {
+    export CFLAGS="${CFLAGS/-Os/} -DTHREAD_STACK_SIZE=0x100000"
+    ./configure \
+        --build="${CBUILD}" \
+        --host="${CHOST}" \
+        --prefix=/usr \
+        --enable-ipv6 \
+        --enable-optimizations \
+        --enable-shared \
+        --enable-unicode=ucs4 \
+        --with-system-expat \
+        --with-system-ffi \
+        --with-threads \
+        ac_cv_file__dev_ptmx=yes \
+        ac_cv_file__dev_ptc=no
+    make
+}
+
+check() {
+    # test that we reach recursionlimit before we segfault
+    LD_LIBRARY_PATH="${PWD}" ./python <<-EOF
+import threading
+import sys
+
+def fun(i):
+    try:
+        fun(i+1)
+    except:
+        sys.exit(0)
+
+t = threading.Thread(target=fun, args=[1])
+t.start()
+EOF
+}
+
+package() {
+    make -j1 DESTDIR="${pkgdir}" install
+
+    # remove 'python' symlinks
+    rm "${pkgdir}"/usr/bin/python
+    rm "${pkgdir}"/usr/bin/python-config
+
+    # remove scripts
+    rm "${pkgdir}"/usr/bin/2to3
+    rm "${pkgdir}"/usr/bin/idle
+    rm "${pkgdir}"/usr/bin/pydoc
+    rm "${pkgdir}"/usr/bin/smtpd.py
+
+    # remove 'idle' and '2to3' related modules
+    rm -r "${pkgdir}"/usr/lib/${_pydir}/idlelib
+    rm -r "${pkgdir}"/usr/lib/${_pydir}/lib-tk
+    rm -r "${pkgdir}"/usr/lib/${_pydir}/lib2to3
+
+    # remove 'test' module and submodules
+    rm -r "${pkgdir}"/usr/lib/${_pydir}/test
+    rm -r "${pkgdir}"/usr/lib/${_pydir}/*/test
+    rm -r "${pkgdir}"/usr/lib/${_pydir}/*/tests
+}
+
+dev() {
+    default_dev
+
+    # pyconfig.h is needed at runtime
+    mkdir -p "${pkgdir}"/usr/include/${_pydir}
+    mv "${subpkgdir}"/usr/include/${_pydir}/pyconfig.h \
+        "${pkgdir}"/usr/include/${_pydir}
+}
+
+sha512sums="
+a7bb62b51f48ff0b6df0b18f5b0312a523e3110f49c3237936bfe56ed0e26838c0274ff5401bda6fc21bf24337477ccac49e8026c5d651e4b4cafb5eb5086f6c  Python-2.7.18.tar.xz
+9abb510f769fee9c212be728f71802cdd3346b65f052dcc820686feee53a51ad106e4f34e439c5d9dd5da7a00559b07ad0fee4815ebd16fbfb170ba228fc37f5  00_musl-find_library.patch
+0554c2b402a01492162c166724441c412719225b0b87725ec6c746d42bc4ed64ab39178a0035ec7de891b369338f0fe6a69d5792ed2d069cc27c865f5e518be4  05_unchecked-ioctl.patch
+d8c2ffa3bda43f67c017510da8c5b2a1a05f2e05a66d2801cb2c2fc3971ef01346a2516648c7f760d5bba3236fc2c429596271a8a1cf4663123eb00723c2e217  10_setup.py-readelf.patch
+03ce1c69f9dad230b8d167e47137ec8a43b76502716dd25427c367b4da693db094802d4e8bd93dcddca36ea43bb20d81c54316c7b9576fe7e5f72bc337a5798e  15_Makefile.pre.in-compileall.py.patch
+ebba212af86f095a620dd178cc355f0fae57e88deea6bbf6bfa745134bc0f5f48f8081131992f4f7fc69f736baaf243e600938833f7a1e73ada63dd9e89d1916  20_cve-2021-3177.patch
+"
