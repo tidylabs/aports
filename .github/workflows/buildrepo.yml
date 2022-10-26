@@ -13,6 +13,7 @@ jobs:
       options: --pull always
     env:
       ABUILD_USER: builder
+      USE_CCACHE: 1
 
     steps:
       - name: Get Alpine release version
@@ -34,7 +35,7 @@ jobs:
           path: tidylabs-aports
 
       - name: Install build dependencies
-        run: apk add --update alpine-sdk doas lua-aports tar
+        run: apk add --update alpine-sdk ccache doas lua-aports tar
 
       - name: Create user for abuild
         run: |
@@ -74,17 +75,21 @@ jobs:
         run: |
           chown -R ${ABUILD_USER}:${ABUILD_USER} "${GITHUB_WORKSPACE}"
 
+      - name: Configure ccache
+        run: |
+          su ${ABUILD_USER} -c 'ccache -o base_dir="${HOME}" -o hash_dir=false'
+
       - name: Build aarch64 cross compiler
         run: |
-          su ${ABUILD_USER} -c "tidylabs-aports/scripts/build-cross-cc.sh aarch64"
+          su ${ABUILD_USER} -c 'tidylabs-aports/scripts/build-cross-cc.sh aarch64'
 
       - name: Build 'community' repo (x86_64)
         run: |
-          su ${ABUILD_USER} -c "buildrepo -a \"${GITHUB_WORKSPACE}/tidylabs-aports\" community"
+          su ${ABUILD_USER} -c 'buildrepo -a "${GITHUB_WORKSPACE}/tidylabs-aports" community'
 
       - name: Build 'community' repo (aarch64)
         run: |
-          su ${ABUILD_USER} -c "buildrepo -a \"${GITHUB_WORKSPACE}/tidylabs-aports\" community"
+          su ${ABUILD_USER} -c 'buildrepo -a "${GITHUB_WORKSPACE}/tidylabs-aports" community'
         env:
           CHOST: aarch64
           EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
