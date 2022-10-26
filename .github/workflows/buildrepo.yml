@@ -81,7 +81,7 @@ jobs:
 
       - name: Build aarch64 cross compiler
         run: |
-          su ${ABUILD_USER} -c 'tidylabs-aports/scripts/build-cross-cc.sh aarch64'
+          su ${ABUILD_USER} -c 'tidylabs-aports/scripts/bootstrap-cc.sh aarch64'
 
       - name: Build 'community' repo (x86_64)
         run: |

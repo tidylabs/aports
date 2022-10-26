@@ -31,6 +31,10 @@ if [ ! -d "${CBUILDROOT}" ]; then
     # copy repositories
     ${SUDO} cp -a /etc/apk/repositories "${CBUILDROOT}/etc/apk"
 
+    # copy local keys
+    ${SUDO} mkdir -p "${CBUILDROOT}/etc/apk/keys"
+    ${SUDO} cp -a ~/.abuild/*.pub "${CBUILDROOT}/etc/apk/keys"
+
     # add alpine-keys (WARNING: --allow-untrusted)
     ${SUDO} apk add \
         --quiet \
@@ -61,11 +65,11 @@ abuild -F -r
 
 # add links for ccache
 if [ -e /usr/lib/ccache/bin ]; then
-    for link in cc gcc g++ cpp c++; do
+    for link in gcc g++ cpp c++; do
         ${SUDO} ln -sf /usr/bin/ccache "/usr/lib/ccache/bin/${CTARGET}-${link}"
     done
 fi
 
 echo "To install the cross-compiler use 'apk add --repository \"${REPODEST}main\" build-base-${CTARGET_ARCH}'"
-echo "To build Alpine packages for '${CTARGET_ARCH}' use 'EXTRADEPENDS_TARGET=\"libgcc libstdc++ musl-dev\" CHOST=\"${CTARGET_ARCH}\" abuild -r'"
+echo "To build Alpine packages for '${CTARGET_ARCH}' use 'EXTRADEPENDS_HOST=\"libgcc libstdc++ musl-dev\" CHOST=\"${CTARGET_ARCH}\" abuild -r'"
 echo "To explicitly install cross-build libraries use 'apk --arch \"${CTARGET_ARCH}\" --root \"${CBUILDROOT}\" add --no-scripts <pkg>'"
