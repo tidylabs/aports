@@ -49,10 +49,10 @@ _buildopts="
     "
 
 # ensure default variables are set
-: ${HOSTCC=$CC}
-: ${HOSTCC:="gcc"}
-: ${HOSTCXX=$CXX}
-: ${HOSTCXX:="g++"}
+: ${BUILDCC=$CC}
+: ${BUILDCC:="gcc"}
+: ${BUILDCXX=$CXX}
+: ${BUILDCXX:="g++"}
 
 prepare() {
     default_prepare
@@ -62,7 +62,7 @@ prepare() {
         && source venv/bin/activate
 
     # install buildscript python2 dependencies
-    CC="${HOSTCC}" CXX="${HOSTCXX}" \
+    CC="${BUILDCC}" CXX="${BUILDCXX}" \
     pip2 install -r buildscripts/requirements.txt
 }
 
