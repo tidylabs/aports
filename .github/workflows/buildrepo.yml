@@ -1,0 +1,90 @@
+# Build an aports repository using GitHub Actions
+
+name: buildrepo
+
+on:
+  push:
+    branches: [ "main" ]
+jobs:
+  buildrepo:
+    runs-on: ubuntu-latest
+    container:
+      image: alpine:latest
+      options: --pull always
+    env:
+      ABUILD_USER: builder
+
+    steps:
+      - name: Get Alpine release version
+        run: |
+          ALPINE_RELEASE="$(cat /etc/alpine-release)"
+          echo "ALPINE_RELEASE_MINOR=${ALPINE_RELEASE}" >> $GITHUB_ENV
+          echo "ALPINE_RELEASE_MAJOR=${ALPINE_RELEASE%.*}" >> $GITHUB_ENV
+
+      - name: Checkout alpinelinux/aports
+        uses: actions/checkout@v3
+        with:
+          repository: alpinelinux/aports
+          ref: v${{ env.ALPINE_RELEASE_MINOR }}
+          path: aports
+
+      - name: Checkout tidylabs/aports
+        uses: actions/checkout@v3
+        with:
+          path: tidylabs-aports
+
+      - name: Install build dependencies
+        run: apk add --update alpine-sdk doas lua-aports tar
+
+      - name: Create user for abuild
+        run: |
+          adduser -h "${GITHUB_WORKSPACE}" -D ${ABUILD_USER}
+          adduser ${ABUILD_USER} abuild
+
+          adduser ${ABUILD_USER} wheel
+          echo "permit nopass :wheel" >> "/etc/doas.d/doas.conf"
+
+      - name: Cache build dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            /var/cache/apk
+            /var/cache/distfiles
+            .cache
+            .ccache
+            packages
+          key: aports-${{ env.ALPINE_RELEASE_MINOR }}-${{ github.run_id }}
+          restore-keys: |
+            aports-${{ env.ALPINE_RELEASE_MINOR }}
+            aports-${{ env.ALPINE_RELEASE_MAJOR }}
+
+      - name: Setup signing keys
+        run: |
+          PACKAGER_PRIVKEY="${GITHUB_WORKSPACE}/.abuild/opensource@tidylabs.app-631fa07a.rsa"
+          mkdir -p "${PACKAGER_PRIVKEY%/*}"
+          echo "${{ secrets.PACKAGER_PRIVKEY }}" > "${PACKAGER_PRIVKEY}"
+          echo "PACKAGER_PRIVKEY=${PACKAGER_PRIVKEY}" >> "${GITHUB_WORKSPACE}/.abuild/abuild.conf"
+
+          PACKAGER_PUBKEY="/etc/apk/keys/opensource@tidylabs.app-631fa07a.rsa.pub"
+          mkdir -p "${PACKAGER_PUBKEY%/*}"
+          echo "${{ secrets.PACKAGER_PUBKEY }}" > "${PACKAGER_PUBKEY}"
+          echo "PACKAGER_PUBKEY=${PACKAGER_PUBKEY}" >> "${GITHUB_WORKSPACE}/.abuild/abuild.conf"
+
+      - name: Fix filesystem permissions
+        run: |
+          chown -R ${ABUILD_USER}:${ABUILD_USER} "${GITHUB_WORKSPACE}"
+
+      - name: Build aarch64 cross compiler
+        run: |
+          su ${ABUILD_USER} -c "tidylabs-aports/scripts/build-cross-cc.sh aarch64"
+
+      - name: Build 'community' repo (x86_64)
+        run: |
+          su ${ABUILD_USER} -c "buildrepo -a \"${GITHUB_WORKSPACE}/tidylabs-aports\" community"
+
+      - name: Build 'community' repo (aarch64)
+        run: |
+          su ${ABUILD_USER} -c "buildrepo -a \"${GITHUB_WORKSPACE}/tidylabs-aports\" community"
+        env:
+          CHOST: aarch64
+          EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
