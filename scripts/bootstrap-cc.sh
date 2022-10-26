@@ -29,11 +29,10 @@ if [ ! -d "${CBUILDROOT}" ]; then
         --root "${CBUILDROOT}"
 
     # copy repositories
-    ${SUDO} cp -a /etc/apk/repositories "${CBUILDROOT}/etc/apk"
+    ${SUDO} cp -a /etc/apk/repositories "${CBUILDROOT}/etc/apk/."
 
-    # copy local keys
-    ${SUDO} mkdir -p "${CBUILDROOT}/etc/apk/keys"
-    ${SUDO} cp -a ~/.abuild/*.pub "${CBUILDROOT}/etc/apk/keys"
+    # copy keys
+    ${SUDO} cp -aR /etc/apk/keys "${CBUILDROOT}/etc/apk/."
 
     # add alpine-keys (WARNING: --allow-untrusted)
     ${SUDO} apk add \
