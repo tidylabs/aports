@@ -11,21 +11,10 @@ options="!check" # out of disk space (>35GB)
 license="SSPL-1.0"
 pkgusers="mongodb"
 pkggroups="mongodb"
-subpackages="
-    ${pkgname}-doc
-    ${pkgname}-openrc
-    "
+subpackages="${pkgname}-doc ${pkgname}-openrc"
 openrc_depends="tzdata"
-makedepends_build="
-    cyrus-sasl-dev
-    libressl-dev
-    python2-dev
-    "
-makedepends_host="
-    cyrus-sasl-dev
-    libressl-dev
-    linux-headers
-    "
+makedepends_build="python2-dev"
+makedepends_host="cyrus-sasl-dev libressl-dev linux-headers"
 source="
     http://downloads.mongodb.org/src/mongodb-src-r${pkgver}.tar.gz
     https://bootstrap.pypa.io/virtualenv/2.7/virtualenv.pyz
