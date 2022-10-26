@@ -1,0 +1,13 @@
+--- a/SConstruct
++++ b/SConstruct
+@@ -1716,6 +1716,10 @@
+     if env.ToolchainIs('GCC', 'clang'):
+         env.Append( CCFLAGS=['-march=nocona', '-mtune=generic'] )
+ 
++# Use CRC32 hardware acceleration on arm64 if enabled. 
++if has_option("use-s390x-crc32") and env['TARGET_ARCH'] == 'aarch64':
++    env.Append( CCFLAGS=['-march=armv8-a+crc'] )
++
+ # Needed for auth tests since key files are stored in git with mode 644.
+ if not env.TargetOSIs('windows'):
+     for keysuffix in [ "1" , "2" ]:

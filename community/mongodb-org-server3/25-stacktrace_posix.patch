@@ -1,0 +1,13 @@
+--- a/src/mongo/util/stacktrace_posix.cpp
++++ b/src/mongo/util/stacktrace_posix.cpp
+@@ -284,6 +284,10 @@ MONGO_INITIALIZER(ExtractSOMap)(InitializerContext*) {
+ #include <elf.h>
+ #include <link.h>
+ 
++#include <sys/reg.h>
++
++#define __ELF_NATIVE_CLASS __WORDSIZE
++
+ namespace mongo {
+ namespace {
+ 

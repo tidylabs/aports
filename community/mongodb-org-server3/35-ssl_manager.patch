@@ -1,0 +1,13 @@
+--- a/src/mongo/util/net/ssl_manager.cpp
++++ b/src/mongo/util/net/ssl_manager.cpp
+@@ -280,7 +280,10 @@ const STACK_OF(X509_EXTENSION) * X509_ge
+ inline int X509_NAME_ENTRY_set(const X509_NAME_ENTRY* ne) {
+     return ne->set;
+ }
++#endif
+ 
++#if OPENSSL_VERSION_NUMBER < 0x10100000L || \
++    (defined(LIBRESSL_VERSION_NUMBER) && LIBRESSL_VERSION_NUMBER < 0x3050000fL)
+ // On OpenSSL < 1.1.0, this chain isn't attached to
+ // the SSL session, so we need it to dispose of itself.
+ struct VerifiedChainDeleter {

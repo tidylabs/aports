@@ -1,0 +1,16 @@
+--- a/src/mongo/util/dns_query_posix-impl.h
++++ b/src/mongo/util/dns_query_posix-impl.h
+@@ -40,6 +40,13 @@
+ #include <resolv.h>
+ // clang-format on
+ 
++// Support deprecated resolver, as in musl libc
++#ifndef res_ninit
++#define res_nclose(arg)
++#define res_ninit(arg)    res_init()
++#define res_nsearch(sta, nam, clas, typ, ans, alen)  res_search(nam, clas, typ, ans, alen)
++#endif
++
+ #include <stdio.h>
+ 
+ #include <iostream>

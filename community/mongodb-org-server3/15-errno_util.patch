@@ -1,0 +1,13 @@
+--- a/src/mongo/util/errno_util.cpp
++++ b/src/mongo/util/errno_util.cpp
+@@ -61,9 +61,7 @@ std::string errnoWithDescription(int errNumber) {
+     char buf[kBuflen];
+     char* msg{nullptr};
+ 
+-#if defined(__GNUC__) && defined(_GNU_SOURCE)
+-    msg = strerror_r(errNumber, buf, kBuflen);
+-#elif defined(_WIN32)
++#if defined(_WIN32)
+ 
+     LPWSTR errorText = nullptr;
+     FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_ALLOCATE_BUFFER |
