@@ -5,6 +5,9 @@ name: buildrepo
 on:
   push:
     branches: [ "main" ]
+  schedule:
+    # Every day at 3am
+    - cron: "0 3 * * *"
 jobs:
   buildrepo:
     runs-on: ubuntu-latest
