@@ -1,52 +1,51 @@
-# Contributor: Justin Klaassen <jck112@users.noreply.github.com>
-# Maintainer: Justin Klaassen <jck112@users.noreply.github.com>
+# Contributor: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+# Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=mongodb-org-server3
 pkgver=3.6.23
 pkgrel=0
 pkgdesc="MongoDB database server"
 url="http://www.mongodb.org"
 arch="aarch64 x86_64"
-provides="mongodb-org-server=${pkgver}-r${pkgrel}"
+provides="mongodb-org-server=$pkgver-r$pkgrel"
 options="!check" # out of disk space (>35GB)
 license="SSPL-1.0"
 pkgusers="mongodb"
 pkggroups="mongodb"
-subpackages="${pkgname}-doc ${pkgname}-openrc"
-openrc_depends="tzdata"
+subpackages="$pkgname-doc $pkgname-openrc"
 makedepends_build="python2-dev"
 makedepends_host="cyrus-sasl-dev libressl-dev linux-headers"
 source="
-    http://downloads.mongodb.org/src/mongodb-src-r${pkgver}.tar.gz
-    https://bootstrap.pypa.io/virtualenv/2.7/virtualenv.pyz
+	http://downloads.mongodb.org/src/mongodb-src-r$pkgver.tar.gz
+	https://bootstrap.pypa.io/virtualenv/2.7/virtualenv.pyz
 
-    00-requirements.patch
-    05-SConstruct_crc.patch
-    10-dns_query_posix-impl.patch
-    15-errno_util.patch
-    20-processinfo_linux.patch
-    25-stacktrace_posix.patch
-    30-wiredtiger_config.patch
-    35-ssl_manager.patch
-    40-asio_context.patch
-    45-bid_functions.patch
+	00-requirements.patch
+	05-SConstruct_crc.patch
+	10-dns_query_posix-impl.patch
+	15-errno_util.patch
+	20-processinfo_linux.patch
+	25-stacktrace_posix.patch
+	30-wiredtiger_config.patch
+	35-ssl_manager.patch
+	40-asio_context.patch
+	45-bid_functions.patch
 
-    mongod.initd
-    "
-builddir="${srcdir}/mongodb-src-r${pkgver}"
+	mongod.initd
+	"
+builddir="$srcdir/mongodb-src-r$pkgver"
 _buildopts="
-    --jobs ${JOBS} \
-    --release \
-    --allocator=system \
-    --disable-warnings-as-errors \
-    --use-sasl-client \
-    --ssl \
-    --variables-files=etc/scons/propagate_shell_environment.vars \
-    CC=${CC} \
-    CXX=${CXX} \
-    CXXFLAGS='-w' \
-    TARGET_ARCH=${CTARGET_ARCH} \
-    VERBOSE=off \
-    "
+	--jobs $JOBS \
+	--release \
+	--allocator=system \
+	--disable-warnings-as-errors \
+	--use-sasl-client \
+	--ssl \
+	--variables-files=etc/scons/propagate_shell_environment.vars \
+	CC=$CC \
+	CXX=$CXX \
+	CXXFLAGS='-w' \
+	TARGET_ARCH=$CTARGET_ARCH \
+	VERBOSE=off \
+	"
 
 # ensure default variables are set
 : ${BUILDCC=$CC}
@@ -55,53 +54,54 @@ _buildopts="
 : ${BUILDCXX:="g++"}
 
 prepare() {
-    default_prepare
+	default_prepare
 
-    # create a new virtualenv for python2
-    python2 $(readlink -f "${srcdir}"/virtualenv.pyz) venv \
-        && source venv/bin/activate
+	# create a new virtualenv for python2
+	python2 $(readlink -f "$srcdir"/virtualenv.pyz) venv \
+		&& source venv/bin/activate
 
-    # install buildscript python2 dependencies
-    CC="${BUILDCC}" CXX="${BUILDCXX}" \
-    pip2 install -r buildscripts/requirements.txt
+	# install buildscript python2 dependencies
+	CC="$BUILDCC" CXX="$BUILDCXX" \
+	pip2 install -r buildscripts/requirements.txt
 }
 
 build() {
-    python2 buildscripts/scons.py ${_buildopts} mongod
+	python2 buildscripts/scons.py $_buildopts mongod
 }
 
 check() {
-    python2 buildscripts/scons.py ${_buildopts} unittests
-    python2 buildscripts/resmoke.py --jobs ${JOBS} --suites=unittests
+	python2 buildscripts/scons.py $_buildopts unittests
+	python2 buildscripts/resmoke.py --jobs $JOBS --suites=unittests
 }
 
 package() {
-    # install mongod binary
-    install -Dm755 mongod -t "${pkgdir}"/usr/bin
+	# install mongod binary
+	install -Dm755 mongod -t "$pkgdir"/usr/bin
 
-    # install doc files
-    install -Dm644 distsrc/* -t "${pkgdir}"/usr/share/doc/${pkgname}
+	# install doc files
+	install -Dm644 distsrc/* -t "$pkgdir"/usr/share/doc/$pkgname
 
-    # install man files
-    install -Dm644 debian/mongod.1 -t "${pkgdir}"/usr/share/man/man1
+	# install man files
+	install -Dm644 debian/mongod.1 -t "$pkgdir"/usr/share/man/man1
 }
 
 openrc() {
-    default_openrc
+	default_openrc
 
-    install="${subpkgname}.pre-install"
+	depends="tzdata"
+	install="$subpkgname.pre-install"
 
-    # install init files
-    install -Dm755 "${srcdir}"/mongod.initd "${subpkgdir}"/etc/init.d/mongod
+	# install init files
+	install -Dm755 "$srcdir"/mongod.initd "$subpkgdir"/etc/init.d/mongod
 
-    # install conf files
-    install -Dm644 "${builddir}"/debian/mongod.conf -t "${subpkgdir}"/etc
+	# install conf files
+	install -Dm644 "$builddir"/debian/mongod.conf -t "$subpkgdir"/etc
 
-    # create db -- note: this should agree with dbpath in mongod.conf
-    install -o mongodb -g mongodb -d "${subpkgdir}"/var/lib/mongodb
+	# create db -- note: this should agree with dbpath in mongod.conf
+	install -o mongodb -g mongodb -d "$subpkgdir"/var/lib/mongodb
 
-    # create logdir -- note: this should agree with logpath in mongod.conf
-    install -o mongodb -g mongodb -d "${subpkgdir}"/var/log/mongodb
+	# create logdir -- note: this should agree with logpath in mongod.conf
+	install -o mongodb -g mongodb -d "$subpkgdir"/var/log/mongodb
 }
 
 sha512sums="
