@@ -1,5 +1,5 @@
-# Contributor: Justin Klaassen <jck112@users.noreply.github.com>
-# Maintainer: Justin Klaassen <jck112@users.noreply.github.com>
+# Contributor: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+# Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=python2
 pkgver=2.7.18
 pkgrel=0
@@ -8,104 +8,98 @@ url="https://www.python.org"
 arch="all"
 license="https://docs.python.org/2/license.html"
 subpackages="
-    ${pkgname}-dbg
-    ${pkgname}-dev
-    ${pkgname}-doc
-    "
-if [ "${CBUILD}" != "${CHOST}" ]; then
-    options="!check" # can't run cross platform
-
-    # host package is required for cross building
-    makedepends_build="${pkgname}-dev=${pkgver}-r${pkgrel}"
-fi
+	$pkgname-dbg
+	$pkgname-dev
+	$pkgname-doc
+	"
+makedepends_build="$pkgname-dev=$pkgver-r$pkgrel"
 makedepends_host="
-    bzip2-dev
-    expat-dev
-    libffi-dev
-    linux-headers
-    ncurses-dev
-    openssl1.1-compat-dev
-    readline-dev
-    sqlite-dev
-    zlib-dev
-    "
+	bzip2-dev
+	expat-dev
+	libffi-dev
+	linux-headers
+	ncurses-dev
+	openssl1.1-compat-dev
+	readline-dev
+	sqlite-dev
+	zlib-dev
+	"
 source="
-    https://www.python.org/ftp/python/${pkgver}/Python-${pkgver}.tar.xz
-    00_musl-find_library.patch
-    05_unchecked-ioctl.patch
-    10_setup.py-readelf.patch
-    15_Makefile.pre.in-compileall.py.patch
-    20_cve-2021-3177.patch
-    "
-builddir="${srcdir}/Python-${pkgver}"
+	https://www.python.org/ftp/python/$pkgver/Python-$pkgver.tar.xz
+	00_musl-find_library.patch
+	05_unchecked-ioctl.patch
+	10_setup.py-readelf.patch
+	15_Makefile.pre.in-compileall.py.patch
+	20_cve-2021-3177.patch
+	"
+builddir="$srcdir/Python-$pkgver"
 _pydir="python${pkgver%.*}" # e.g. 'python2.7'
 
 build() {
-    export CFLAGS="${CFLAGS/-Os/} -DTHREAD_STACK_SIZE=0x100000"
-    ./configure \
-        --build="${CBUILD}" \
-        --host="${CHOST}" \
-        --prefix=/usr \
-        --enable-ipv6 \
-        --enable-optimizations \
-        --enable-shared \
-        --enable-unicode=ucs4 \
-        --with-system-expat \
-        --with-system-ffi \
-        --with-threads \
-        ac_cv_file__dev_ptmx=yes \
-        ac_cv_file__dev_ptc=no
-    make
+	export CFLAGS="${CFLAGS/-Os/} -DTHREAD_STACK_SIZE=0x100000"
+	./configure \
+		--build="$CBUILD" \
+		--host="$CHOST" \
+		--prefix=/usr \
+		--enable-ipv6 \
+		--enable-optimizations \
+		--enable-shared \
+		--enable-unicode=ucs4 \
+		--with-system-expat \
+		--with-system-ffi \
+		--with-threads \
+		ac_cv_file__dev_ptmx=yes \
+		ac_cv_file__dev_ptc=no
+	make
 }
 
 check() {
-    # test that we reach recursionlimit before we segfault
-    LD_LIBRARY_PATH="${PWD}" ./python <<-EOF
+	# test that we reach recursionlimit before we segfault
+	LD_LIBRARY_PATH="$PWD" ./python <<EOF
 import threading
 import sys
 
 def fun(i):
-    try:
-        fun(i+1)
-    except:
-        sys.exit(0)
+	try:
+		fun(i+1)
+	except:
+		sys.exit(0)
 
-t = threading.Thread(target=fun, args=[1])
-t.start()
+threading.Thread(target=fun, args=[1]).start()
 EOF
 }
 
 package() {
-    make -j1 DESTDIR="${pkgdir}" install
+	make -j1 DESTDIR="$pkgdir" install
 
-    # remove 'python' symlinks
-    rm "${pkgdir}"/usr/bin/python
-    rm "${pkgdir}"/usr/bin/python-config
+	# remove 'python' symlinks
+	rm "$pkgdir"/usr/bin/python
+	rm "$pkgdir"/usr/bin/python-config
 
-    # remove scripts
-    rm "${pkgdir}"/usr/bin/2to3
-    rm "${pkgdir}"/usr/bin/idle
-    rm "${pkgdir}"/usr/bin/pydoc
-    rm "${pkgdir}"/usr/bin/smtpd.py
+	# remove scripts
+	rm "$pkgdir"/usr/bin/2to3
+	rm "$pkgdir"/usr/bin/idle
+	rm "$pkgdir"/usr/bin/pydoc
+	rm "$pkgdir"/usr/bin/smtpd.py
 
-    # remove 'idle' and '2to3' related modules
-    rm -r "${pkgdir}"/usr/lib/${_pydir}/idlelib
-    rm -r "${pkgdir}"/usr/lib/${_pydir}/lib-tk
-    rm -r "${pkgdir}"/usr/lib/${_pydir}/lib2to3
+	# remove 'idle' and '2to3' related modules
+	rm -r "$pkgdir"/usr/lib/$_pydir/idlelib
+	rm -r "$pkgdir"/usr/lib/$_pydir/lib-tk
+	rm -r "$pkgdir"/usr/lib/$_pydir/lib2to3
 
-    # remove 'test' module and submodules
-    rm -r "${pkgdir}"/usr/lib/${_pydir}/test
-    rm -r "${pkgdir}"/usr/lib/${_pydir}/*/test
-    rm -r "${pkgdir}"/usr/lib/${_pydir}/*/tests
+	# remove 'test' module and submodules
+	rm -r "$pkgdir"/usr/lib/$_pydir/test
+	rm -r "$pkgdir"/usr/lib/$_pydir/*/test
+	rm -r "$pkgdir"/usr/lib/$_pydir/*/tests
 }
 
 dev() {
-    default_dev
+	default_dev
 
-    # pyconfig.h is needed at runtime
-    mkdir -p "${pkgdir}"/usr/include/${_pydir}
-    mv "${subpkgdir}"/usr/include/${_pydir}/pyconfig.h \
-        "${pkgdir}"/usr/include/${_pydir}
+	# pyconfig.h is needed at runtime
+	mkdir -p "$pkgdir"/usr/include/$_pydir
+	mv "$subpkgdir"/usr/include/$_pydir/pyconfig.h \
+		"$pkgdir"/usr/include/$_pydir
 }
 
 sha512sums="
