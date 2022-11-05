@@ -1,0 +1,59 @@
+# Contributor: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+# Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+pkgname=ruby2.6
+pkgver=2.6.10
+pkgrel=0
+pkgdesc="An object-oriented language for quick and easy programming"
+url="https://www.ruby-lang.org"
+arch="aarch64 x86_64"
+provides="ruby=$pkgver-r$pkgrel"
+options="!check"
+license="https://www.ruby-lang.org/en/about/license.txt"
+subpackages="
+	$pkgname-dev
+	$pkgname-doc
+	"
+makedepends_build="
+	perl
+	"
+makedepends_host="
+	linux-headers
+	openssl1.1-compat-dev
+	readline-dev
+	zlib-dev
+	"
+source="
+	https://cache.ruby-lang.org/pub/ruby/${pkgver%.*}/ruby-$pkgver.tar.gz
+	"
+builddir="$srcdir/ruby-$pkgver"
+
+build() {
+	./configure \
+		--build=$CBUILD \
+		--host=$CHOST \
+		--prefix=/usr \
+		--sysconfdir=/etc \
+		--with-sitedir=/usr/local/lib/site_ruby \
+		--with-mantype=man \
+		--disable-rpath \
+		--enable-pthread \
+		--enable-shared \
+		--without-dbm \
+		--without-gdbm
+	make
+}
+
+check() {
+	make test
+}
+
+package() {
+	make -j1 DESTDIR="$pkgdir" install
+
+	# remove "/usr/local/lib/site_ruby"
+	rm -rv "$pkgdir"/usr/local
+}
+
+sha512sums="
+13249c639da236d48749f5d9f563068f032f02d75372a8a5633626fdd32814150e7f79e81b25b205885ac38964ab20ef7323bd40346a798948f63a2eba5c8daf  ruby-2.6.10.tar.gz
+"
