@@ -5,7 +5,7 @@ pkgver=2.6.10
 pkgrel=0
 pkgdesc="An object-oriented language for quick and easy programming"
 url="https://www.ruby-lang.org"
-arch="aarch64 x86_64"
+arch="all"
 provides="ruby=$pkgver-r$pkgrel"
 options="!check"
 license="https://www.ruby-lang.org/en/about/license.txt"
@@ -14,6 +14,7 @@ subpackages="
 	$pkgname-doc
 	"
 makedepends_build="
+	$pkgname-dev=$pkgver-r$pkgrel
 	perl
 	"
 makedepends_host="
