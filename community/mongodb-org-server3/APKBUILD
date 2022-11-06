@@ -5,15 +5,24 @@ pkgver=3.6.23
 pkgrel=0
 pkgdesc="MongoDB database server"
 url="http://www.mongodb.org"
-arch="aarch64 x86_64"
-provides="mongodb-org-server=$pkgver-r$pkgrel"
-options="!check" # out of disk space (>35GB)
-license="SSPL-1.0"
+license="https://www.mongodb.com/licensing/server-side-public-license"
+arch="all"
+options="!check"
 pkgusers="mongodb"
 pkggroups="mongodb"
-subpackages="$pkgname-doc $pkgname-openrc"
-makedepends_build="python2-dev"
-makedepends_host="cyrus-sasl-dev libressl-dev linux-headers"
+provides="mongodb-org-server=$pkgver-r$pkgrel"
+subpackages="
+	$pkgname-doc
+	$pkgname-openrc
+	"
+makedepends_build="
+	python2-dev
+	"
+makedepends_host="
+	cyrus-sasl-dev
+	libressl-dev
+	linux-headers
+	"
 source="
 	http://downloads.mongodb.org/src/mongodb-src-r$pkgver.tar.gz
 	https://bootstrap.pypa.io/virtualenv/2.7/virtualenv.pyz
