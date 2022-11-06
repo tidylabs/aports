@@ -1,6 +1,4 @@
-# Build an aports repository using GitHub Actions
-
-name: buildrepo
+name: Build aports
 
 on:
   push:
@@ -8,6 +6,10 @@ on:
   schedule:
     # Every day at 3am
     - cron: "0 3 * * *"
+
+concurrency:
+  group: "buildrepo"
+
 jobs:
   buildrepo:
     runs-on: ubuntu-latest
