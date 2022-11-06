@@ -2,17 +2,20 @@
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=ruby2.6
 pkgver=2.6.10
-pkgrel=0
+pkgrel=1
 pkgdesc="An object-oriented language for quick and easy programming"
 url="https://www.ruby-lang.org"
-arch="all"
-provides="ruby=$pkgver-r$pkgrel"
-options="!check"
 license="https://www.ruby-lang.org/en/about/license.txt"
+arch="all"
+options="!check"
+provides="ruby=$pkgver-r$pkgrel"
 subpackages="
 	$pkgname-dev
 	$pkgname-doc
 	"
+depends="
+	ca-certificates-bundle
+"
 makedepends_build="
 	$pkgname-dev=$pkgver-r$pkgrel
 	perl
