@@ -7,8 +7,7 @@ on:
     # Every day at 3am
     - cron: "0 3 * * *"
 
-concurrency:
-  group: "buildrepo"
+concurrency: buildrepo
 
 jobs:
   buildrepo:
@@ -16,6 +15,7 @@ jobs:
     container:
       image: alpine:latest
       options: --pull always
+    environment: release
     env:
       ABUILD_USER: builder
       USE_CCACHE: 1
@@ -40,7 +40,7 @@ jobs:
           path: tidylabs-aports
 
       - name: Install build dependencies
-        run: apk add --update alpine-sdk ccache doas lua-aports tar
+        run: apk add --update alpine-sdk ccache doas lua-aports rclone tar
 
       - name: Create user for abuild
         run: |
@@ -49,6 +49,12 @@ jobs:
 
           adduser ${ABUILD_USER} wheel
           echo "permit nopass :wheel" >> "/etc/doas.d/doas.conf"
+
+      - name: Configure rclone
+        run: |
+          RCLONE_CONFIG="/github/home/.config/rclone/rclone.conf"
+          mkdir -p "${RCLONE_CONFIG%/*}"
+          echo "${{ secrets.RCLONE_CONFIG }}" > "${RCLONE_CONFIG}"
 
       - name: Cache build dependencies
         uses: actions/cache@v3
@@ -64,14 +70,19 @@ jobs:
             aports-${{ env.ALPINE_RELEASE_MINOR }}
             aports-${{ env.ALPINE_RELEASE_MAJOR }}
 
+      - name: Download packages
+        run: |
+          rclone mkdir -v remote:${ALPINE_RELEASE_MAJOR}/
+          rclone sync -v remote:${ALPINE_RELEASE_MAJOR}/ packages/
+
       - name: Setup signing keys
         run: |
-          PACKAGER_PRIVKEY="${GITHUB_WORKSPACE}/.abuild/opensource@tidylabs.app-631fa07a.rsa"
+          PACKAGER_PRIVKEY="${GITHUB_WORKSPACE}/.abuild/opensource@tidylabs.app-e0bb7fa4.rsa"
           mkdir -p "${PACKAGER_PRIVKEY%/*}"
           echo "${{ secrets.PACKAGER_PRIVKEY }}" > "${PACKAGER_PRIVKEY}"
           echo "PACKAGER_PRIVKEY=${PACKAGER_PRIVKEY}" >> "${GITHUB_WORKSPACE}/.abuild/abuild.conf"
 
-          PACKAGER_PUBKEY="/etc/apk/keys/opensource@tidylabs.app-631fa07a.rsa.pub"
+          PACKAGER_PUBKEY="/etc/apk/keys/opensource@tidylabs.app-e0bb7fa4.rsa.pub"
           mkdir -p "${PACKAGER_PUBKEY%/*}"
           echo "${{ secrets.PACKAGER_PUBKEY }}" > "${PACKAGER_PUBKEY}"
           echo "PACKAGER_PUBKEY=${PACKAGER_PUBKEY}" >> "${GITHUB_WORKSPACE}/.abuild/abuild.conf"
@@ -98,3 +109,6 @@ jobs:
         env:
           CHOST: aarch64
           EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
+
+      - name: Upload packages
+        run: rclone sync -v packages/ remote:${ALPINE_RELEASE_MAJOR}/
