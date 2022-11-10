@@ -64,8 +64,9 @@ abuild -F -r
 
 # add links for ccache
 if [ -e /usr/lib/ccache/bin ]; then
+    echo "Linking cross-compiler (for ccache)"
     for link in gcc g++ cpp c++; do
-        ${SUDO} ln -sf /usr/bin/ccache "/usr/lib/ccache/bin/${CTARGET}-${link}"
+        ${SUDO} ln -sfv /usr/bin/ccache "/usr/lib/ccache/bin/${CTARGET}-${link}"
     done
 fi
 
