@@ -21,11 +21,14 @@ jobs:
       USE_CCACHE: 1
 
     steps:
+      - name: Setup environment
+        run: |
+          echo HOME="$(echo ~)" >> $GITHUB_ENV
+
       - name: Get Alpine release version
         run: |
-          ALPINE_RELEASE="$(cat /etc/alpine-release)"
-          echo "ALPINE_RELEASE_MINOR=${ALPINE_RELEASE}" >> $GITHUB_ENV
-          echo "ALPINE_RELEASE_MAJOR=${ALPINE_RELEASE%.*}" >> $GITHUB_ENV
+          echo ALPINE_RELEASE_MINOR="$(cat /etc/alpine-release)" >> $GITHUB_ENV
+          echo ALPINE_RELEASE_MAJOR="${ALPINE_RELEASE_MINOR%.*}" >> $GITHUB_ENV
 
       - name: Checkout alpinelinux/aports
         uses: actions/checkout@v3
@@ -44,7 +47,7 @@ jobs:
 
       - name: Create user for abuild
         run: |
-          adduser -h "${GITHUB_WORKSPACE}" -D ${ABUILD_USER}
+          adduser -h "$GITHUB_WORKSPACE" -D $ABUILD_USER
           adduser ${ABUILD_USER} abuild
 
           adduser ${ABUILD_USER} wheel
@@ -52,7 +55,7 @@ jobs:
 
       - name: Configure rclone
         run: |
-          RCLONE_CONFIG="/github/home/.config/rclone/rclone.conf"
+          RCLONE_CONFIG="$HOME/.config/rclone/rclone.conf"
           mkdir -p "${RCLONE_CONFIG%/*}"
           echo "${{ secrets.RCLONE_CONFIG }}" > "${RCLONE_CONFIG}"
 
@@ -72,8 +75,8 @@ jobs:
 
       - name: Download packages
         run: |
-          rclone mkdir -v remote:${ALPINE_RELEASE_MAJOR}/
-          rclone sync -v remote:${ALPINE_RELEASE_MAJOR}/ packages/
+          rclone mkdir -v remote:v${ALPINE_RELEASE_MAJOR}/
+          rclone sync -v remote:v${ALPINE_RELEASE_MAJOR}/ packages/
 
       - name: Setup signing keys
         run: |
@@ -111,4 +114,4 @@ jobs:
           EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
 
       - name: Upload packages
-        run: rclone sync -v packages/ remote:${ALPINE_RELEASE_MAJOR}/
+        run: rclone sync -v packages/ remote:v${ALPINE_RELEASE_MAJOR}/
