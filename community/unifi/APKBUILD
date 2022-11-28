@@ -2,12 +2,16 @@
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=unifi
 pkgver=7.1.68
-pkgrel=0
+pkgrel=1
 pkgdesc="Ubiquiti UniFi server"
 url="http://www.ubnt.com/unifi"
 license="https://www.ui.com/eula"
 arch="noarch"
 options="!check"
+depends="
+	java-jre-headless
+	mongodb-org-server~=3.6
+	"
 install="
 	$pkgname.pre-install
 	$pkgname.pre-upgrade
