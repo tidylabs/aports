@@ -1,0 +1,23 @@
+# Contributor: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+# Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+pkgname=unifi
+pkgver=7.1.68
+pkgrel=0
+pkgdesc="Ubiquiti UniFi server"
+url="http://www.ubnt.com/unifi"
+license="https://www.ui.com/eula"
+arch="noarch"
+options="!check"
+install="
+	$pkgname.pre-install
+	$pkgname.pre-upgrade
+	$pkgname.pre-deinstall
+	"
+builddir="$srcdir"
+
+package() {
+	install -d "$pkgdir"/usr/lib/unifi
+}
+
+sha512sums="
+"
