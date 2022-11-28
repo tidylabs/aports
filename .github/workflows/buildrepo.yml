@@ -21,14 +21,11 @@ jobs:
       USE_CCACHE: 1
 
     steps:
-      - name: Setup environment
-        run: |
-          echo HOME="$(echo ~)" >> $GITHUB_ENV
-
       - name: Get Alpine release version
         run: |
-          echo ALPINE_RELEASE_MINOR="$(cat /etc/alpine-release)" >> $GITHUB_ENV
-          echo ALPINE_RELEASE_MAJOR="${ALPINE_RELEASE_MINOR%.*}" >> $GITHUB_ENV
+          ALPINE_RELEASE="$(cat /etc/alpine-release)"
+          echo ALPINE_RELEASE_MINOR="${ALPINE_RELEASE}" >> $GITHUB_ENV
+          echo ALPINE_RELEASE_MAJOR="${ALPINE_RELEASE%.*}" >> $GITHUB_ENV
 
       - name: Checkout alpinelinux/aports
         uses: actions/checkout@v3
