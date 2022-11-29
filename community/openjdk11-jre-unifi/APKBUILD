@@ -1,0 +1,54 @@
+# Contributor: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+# Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+pkgname=openjdk11-jre-unifi
+pkgver=11.0.17_p8
+pkgrel=0
+pkgdesc="Oracle OpenJDK 11 (JRE for Ubiquiti UniFi server)"
+url="https://github.com/openjdk/jdk11u"
+license="GPL-2.0-with-classpath-exception"
+arch="all"
+options="!check"
+provides=java-jre-headless
+depends="java-common"
+makedepends_build="openjdk11-jdk~=$pkgver"
+makedepends_host="openjdk11-jmods~=$pkgver"
+builddir="$srcdir"
+
+_java_home="/usr/lib/jvm/java-11-openjdk-unifi"
+ldpath="$_java_home/lib:$_java_home/lib/jli:$_java_home/lib/server"
+sonameprefix="$pkgname:"
+
+_jmods="
+	java.base
+	java.compiler
+	java.datatransfer
+	java.instrument
+	java.logging
+	java.management
+	java.management.rmi
+	java.naming
+	java.prefs
+	java.rmi
+	java.scripting
+	java.security.jgss
+	java.security.sasl
+	java.sql
+	java.transaction.xa
+	java.xml
+	jdk.management
+	jdk.unsupported 
+	"
+
+package() {
+	jlink \
+		--module-path "$CBUILDROOT"/usr/lib/jvm/java-11-openjdk/jmods \
+		--add-modules $(echo $_jmods | tr ' ' ',') \
+		--strip-debug \
+		--compress 2 \
+		--no-header-files \
+		--no-man-pages \
+		--output "$pkgdir/$_java_home"
+}
+
+sha512sums="
+"
