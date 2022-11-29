@@ -11,7 +11,7 @@ options="!check"
 provides=java-jre-headless
 depends="java-common"
 makedepends_build="openjdk11-jdk~=$pkgver"
-makedepends_host="openjdk11-jmods~=$pkgver"
+makedepends_host="openjdk11-jdk~=$pkgver"
 builddir="$srcdir"
 
 _java_home="/usr/lib/jvm/java-11-openjdk-unifi"
