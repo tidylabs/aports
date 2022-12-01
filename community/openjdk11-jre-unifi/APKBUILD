@@ -2,52 +2,48 @@
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=openjdk11-jre-unifi
 pkgver=11.0.17_p8
-pkgrel=2
+pkgrel=3
 pkgdesc="Oracle OpenJDK 11 (JRE for Ubiquiti UniFi server)"
 url="https://github.com/openjdk/jdk11u"
 license="GPL-2.0-with-classpath-exception"
 arch="all"
 options="!check"
 provides=java-jre-headless
-depends="java-common"
-makedepends_build="openjdk11-jdk~=$pkgver"
-makedepends_host="openjdk11-jdk~=$pkgver"
+depends="
+	java-common
+	"
+makedepends_build="
+	openjdk11-jdk~=$pkgver
+	unifi
+	"
+makedepends_host="
+	openjdk11-jdk~=$pkgver
+	"
 builddir="$srcdir"
 
 _java_home="/usr/lib/jvm/java-11-openjdk-unifi"
 ldpath="$_java_home/lib:$_java_home/lib/jli:$_java_home/lib/server"
 sonameprefix="$pkgname:"
 
-_jmods="
-	java.base
-	java.compiler
-	java.desktop
-	java.instrument
-	java.logging
-	java.management
-	java.naming
-	java.net.http
-	java.prefs
-	java.rmi
-	java.scripting
-	java.security.jgss
-	java.security.sasl
-	java.sql
-	java.xml
-	jdk.httpserver
-	jdk.jfr
-	jdk.management
-	jdk.unsupported
-	"
-
 package() {
+	local jmods=$(
+		cd /usr/lib/unifi;
+		jdeps \
+			--recursive \
+			--class-path "lib/*" \
+			--multi-release base \
+			--print-module-deps \
+			--ignore-missing-deps \
+			lib/ace.jar
+	)
 	jlink \
 		--module-path "$CBUILDROOT"/usr/lib/jvm/java-11-openjdk/jmods \
-		--add-modules $(echo $_jmods | tr ' ' ',') \
+		--add-modules "$jmods" \
 		--strip-debug \
 		--compress 2 \
 		--no-header-files \
 		--no-man-pages \
+		--verbose \
 		--output "$pkgdir/$_java_home"
 }
 
