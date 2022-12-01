@@ -37,7 +37,7 @@ _jmods="
 	java.transaction.xa
 	java.xml
 	jdk.management
-	jdk.unsupported 
+	jdk.unsupported
 	"
 
 package() {
