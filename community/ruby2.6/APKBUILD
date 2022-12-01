@@ -15,7 +15,7 @@ subpackages="
 	"
 depends="
 	ca-certificates-bundle
-"
+	"
 makedepends_build="
 	$pkgname-dev=$pkgver-r$pkgrel
 	perl
