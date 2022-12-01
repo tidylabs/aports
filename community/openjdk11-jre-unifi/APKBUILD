@@ -2,7 +2,7 @@
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=openjdk11-jre-unifi
 pkgver=11.0.17_p8
-pkgrel=1
+pkgrel=2
 pkgdesc="Oracle OpenJDK 11 (JRE for Ubiquiti UniFi server)"
 url="https://github.com/openjdk/jdk11u"
 license="GPL-2.0-with-classpath-exception"
@@ -21,21 +21,21 @@ sonameprefix="$pkgname:"
 _jmods="
 	java.base
 	java.compiler
-	java.datatransfer
 	java.desktop
 	java.instrument
 	java.logging
 	java.management
-	java.management.rmi
 	java.naming
+	java.net.http
 	java.prefs
 	java.rmi
 	java.scripting
 	java.security.jgss
 	java.security.sasl
 	java.sql
-	java.transaction.xa
 	java.xml
+	jdk.httpserver
+	jdk.jfr
 	jdk.management
 	jdk.unsupported
 	"
