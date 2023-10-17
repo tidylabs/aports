@@ -27,6 +27,9 @@ jobs:
           echo ALPINE_RELEASE_MINOR="${ALPINE_RELEASE}" >> $GITHUB_ENV
           echo ALPINE_RELEASE_MAJOR="${ALPINE_RELEASE%.*}" >> $GITHUB_ENV
 
+      - name: Install build dependencies
+        run: apk add --update alpine-sdk ccache doas lua-aports rclone tar
+
       - name: Checkout alpinelinux/aports
         uses: actions/checkout@v3
         with:
@@ -38,9 +41,6 @@ jobs:
         uses: actions/checkout@v3
         with:
           path: tidylabs-aports
-
-      - name: Install build dependencies
-        run: apk add --update alpine-sdk ccache doas lua-aports rclone tar
 
       - name: Create user for abuild
         run: |
