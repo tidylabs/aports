@@ -1,7 +1,7 @@
 # Contributor: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=unifi
-pkgver=7.3.76
+pkgver=7.5.176
 pkgrel=0
 pkgdesc="Ubiquiti UniFi server"
 url="http://www.ubnt.com/unifi"
