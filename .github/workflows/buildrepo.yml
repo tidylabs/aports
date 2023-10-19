@@ -101,16 +101,20 @@ jobs:
         run: |
           su ${ABUILD_USER} -c 'tidylabs-aports/scripts/bootstrap-cc.sh aarch64'
 
-      # - name: Build 'community' repo (x86_64)
-      #   run: |
-      #     su ${ABUILD_USER} -c 'buildrepo -a "${GITHUB_WORKSPACE}/tidylabs-aports" community'
+      - name: Build 'community' repo (x86_64)
+        run: |
+          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/ruby2.6/APKBUILD" abuild -F -r -k'
+          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/python2/APKBUILD" abuild -F -r -k'
+          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/mongodb-org-server3/APKBUILD" abuild -F -r -k'
 
-      # - name: Build 'community' repo (aarch64)
-      #   run: |
-      #     su ${ABUILD_USER} -c 'buildrepo -a "${GITHUB_WORKSPACE}/tidylabs-aports" community'
-      #   env:
-      #     CHOST: aarch64
-      #     EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
+      - name: Build 'community' repo (aarch64)
+        run: |
+          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/ruby2.6/APKBUILD" abuild -F -r -k'
+          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/python2/APKBUILD" abuild -F -r -k'
+          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/mongodb-org-server3/APKBUILD" abuild -F -r -k'
+        env:
+          CHOST: aarch64
+          EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
 
       - name: Upload packages
         run: rclone sync -v packages/ remote:v${ALPINE_RELEASE_MAJOR}/
