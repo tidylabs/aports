@@ -103,13 +103,11 @@ jobs:
 
       - name: Build 'community' repo (x86_64)
         run: |
-          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/ruby2.6/APKBUILD" abuild -F -r -k'
           su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/python2/APKBUILD" abuild -F -r -k'
           su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/mongodb-org-server3/APKBUILD" abuild -F -r -k'
 
       - name: Build 'community' repo (aarch64)
         run: |
-          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/ruby2.6/APKBUILD" abuild -F -r -k'
           su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/python2/APKBUILD" abuild -F -r -k'
           su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/mongodb-org-server3/APKBUILD" abuild -F -r -k'
         env:
