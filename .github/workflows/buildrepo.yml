@@ -28,7 +28,7 @@ jobs:
           echo ALPINE_RELEASE_MAJOR="${ALPINE_RELEASE%.*}" >> $GITHUB_ENV
 
       - name: Install build dependencies
-        run: apk add --update alpine-sdk ccache doas lua-aports rclone tar
+        run: apk add --update alpine-sdk ccache doas rclone tar
 
       - name: Configure git user
         uses: tidylabs/action-git-config-user@v1
@@ -45,9 +45,6 @@ jobs:
         with:
           path: tidylabs-aports
 
-      - name: Tag checkout
-        run: git -C "${GITHUB_WORKSPACE}/tidylabs-aports" tag -a "v$(date '+%Y%m%d')" -m "===== snapshot $(date '+%Y%m%d') ====="
-
       - name: Create user for abuild
         run: |
           adduser -h "$GITHUB_WORKSPACE" -D $ABUILD_USER
@@ -63,7 +60,7 @@ jobs:
           echo "${{ secrets.RCLONE_CONFIG }}" > "${RCLONE_CONFIG}"
 
       - name: Restore build cache
-        uses: actions/cache/restore@v3
+        uses: actions/cache@v3
         with:
           path: |
             /var/cache/apk
@@ -104,27 +101,16 @@ jobs:
         run: |
           su ${ABUILD_USER} -c 'tidylabs-aports/scripts/bootstrap-cc.sh aarch64'
 
-      - name: Build 'community' repo (x86_64)
-        run: |
-          su ${ABUILD_USER} -c 'buildrepo -a "${GITHUB_WORKSPACE}/tidylabs-aports" community'
+      # - name: Build 'community' repo (x86_64)
+      #   run: |
+      #     su ${ABUILD_USER} -c 'buildrepo -a "${GITHUB_WORKSPACE}/tidylabs-aports" community'
 
-      - name: Build 'community' repo (aarch64)
-        run: |
-          su ${ABUILD_USER} -c 'buildrepo -a "${GITHUB_WORKSPACE}/tidylabs-aports" community'
-        env:
-          CHOST: aarch64
-          EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
-
-      - name: Save build cache
-        uses: actions/cache/save@v3
-        if: always()
-        with:
-          path: |
-            /var/cache/apk
-            /var/cache/distfiles
-            .cache
-            .ccache
-          key: aports-${{ env.ALPINE_RELEASE_MINOR }}-${{ github.run_id }}
+      # - name: Build 'community' repo (aarch64)
+      #   run: |
+      #     su ${ABUILD_USER} -c 'buildrepo -a "${GITHUB_WORKSPACE}/tidylabs-aports" community'
+      #   env:
+      #     CHOST: aarch64
+      #     EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
 
       - name: Upload packages
         run: rclone sync -v packages/ remote:v${ALPINE_RELEASE_MAJOR}/
