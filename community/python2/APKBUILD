@@ -2,7 +2,7 @@
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=python2
 pkgver=2.7.18
-pkgrel=1
+pkgrel=2
 pkgdesc="A high-level scripting language"
 url="https://www.python.org"
 license="https://docs.python.org/2/license.html"
@@ -43,7 +43,6 @@ build() {
 		--host="$CHOST" \
 		--prefix=/usr \
 		--enable-ipv6 \
-		--enable-optimizations \
 		--enable-shared \
 		--enable-unicode=ucs4 \
 		--with-system-expat \
