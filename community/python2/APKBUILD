@@ -2,7 +2,7 @@
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=python2
 pkgver=2.7.18
-pkgrel=2
+pkgrel=3
 pkgdesc="A high-level scripting language"
 url="https://www.python.org"
 license="https://docs.python.org/2/license.html"
@@ -18,9 +18,9 @@ makedepends_host="
 	bzip2-dev
 	expat-dev
 	libffi-dev
+	libressl-dev
 	linux-headers
 	ncurses-dev
-	openssl1.1-compat-dev
 	readline-dev
 	sqlite-dev
 	zlib-dev
@@ -32,6 +32,7 @@ source="
 	10_setup.py-readelf.patch
 	15_Makefile.pre.in-compileall.py.patch
 	20_cve-2021-3177.patch
+	25_hashopenssl.patch
 	"
 builddir="$srcdir/Python-$pkgver"
 _pydir="python${pkgver%.*}" # e.g. 'python2.7'
@@ -109,4 +110,5 @@ a7bb62b51f48ff0b6df0b18f5b0312a523e3110f49c3237936bfe56ed0e26838c0274ff5401bda6f
 d8c2ffa3bda43f67c017510da8c5b2a1a05f2e05a66d2801cb2c2fc3971ef01346a2516648c7f760d5bba3236fc2c429596271a8a1cf4663123eb00723c2e217  10_setup.py-readelf.patch
 03ce1c69f9dad230b8d167e47137ec8a43b76502716dd25427c367b4da693db094802d4e8bd93dcddca36ea43bb20d81c54316c7b9576fe7e5f72bc337a5798e  15_Makefile.pre.in-compileall.py.patch
 ebba212af86f095a620dd178cc355f0fae57e88deea6bbf6bfa745134bc0f5f48f8081131992f4f7fc69f736baaf243e600938833f7a1e73ada63dd9e89d1916  20_cve-2021-3177.patch
+d3af4d484fe0e082af189464b6c4b74193c3bfcd9a5a825ee85c6c7eb0cebeb6bccd00fe82bf5233282ab854460e3a5b27e547f0fc4b125485c3283deb85bfde  25_hashopenssl.patch
 "
