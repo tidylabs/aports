@@ -1,0 +1,13 @@
+#!/sbin/openrc-run
+
+name="mongod"
+description="MongoDB Database Server"
+command="/usr/bin/mongod"
+command_args="--config /etc/mongod.conf"
+command_user="mongodb:mongodb"
+pidfile="/var/run/mongodb/mongod.pid"
+
+depend() {
+    need net
+    after firewall
+}

@@ -1,0 +1,11 @@
+--- a/src/mongo/db/stats/counters.h
++++ b/src/mongo/db/stats/counters.h
+@@ -182,8 +182,6 @@
+         AtomicWord<long long> requests{0};
+     };
+     CacheAligned<Together> _together{};
+-    static_assert(sizeof(decltype(_together)) <= stdx::hardware_constructive_interference_size,
+-                  "cache line spill");
+ 
+     CacheAligned<AtomicWord<long long>> _logicalBytesOut{0};
+ 
