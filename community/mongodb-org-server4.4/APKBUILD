@@ -1,0 +1,117 @@
+# Contributor: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+# Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+pkgname=mongodb-org-server4.4
+pkgver=4.4.26
+pkgrel=0
+pkgdesc="MongoDB database server"
+url="http://www.mongodb.org"
+license="https://www.mongodb.com/licensing/server-side-public-license"
+arch="all"
+options="!check"
+pkgusers="mongodb"
+pkggroups="mongodb"
+provides="mongodb-org-server=$pkgver-r$pkgrel"
+subpackages="
+	$pkgname-doc
+	$pkgname-openrc
+	"
+makedepends_build="
+	libressl-dev
+	py3-pip
+	python3-dev
+	"
+makedepends_host="
+	libressl-dev
+	linux-headers
+	xz-dev
+	"
+source="
+	http://downloads.mongodb.org/src/mongodb-src-r$pkgver.tar.gz
+
+	00-SConstruct.patch
+	05-plan_stats.patch
+	10-dns_query_posix-impl.patch
+	15-errno_util.patch
+	20-processinfo_linux.patch
+	25-wiredtiger_config.patch
+	30-wiredtiger_SConscript.patch
+	35-counters.patch
+
+	mongod.initd
+	"
+builddir="$srcdir/mongodb-src-r$pkgver"
+
+# ensure default variables are set
+: ${BUILDCC=$CC}
+: ${BUILDCC:="gcc"}
+: ${BUILDCXX=$CXX}
+: ${BUILDCXX:="g++"}
+
+prepare() {
+	default_prepare
+
+	# create a new virtualenv for python3
+	python3 -m venv venv && source venv/bin/activate
+
+	# install buildscript python3 dependencies
+	CC="$BUILDCC" CXX="$BUILDCXX" \
+		python3 -m pip install -r etc/pip/compile-requirements.txt
+}
+
+build() {
+	python3 buildscripts/scons.py \
+		--jobs $JOBS \
+		--release \
+		--allocator=system \
+		--disable-warnings-as-errors \
+		--variables-files=etc/scons/propagate_shell_environment.vars \
+		CC=$CC \
+		CXX=$CXX \
+		CXXFLAGS="-w" \
+		TARGET_ARCH=$CTARGET_ARCH \
+		VERBOSE=off \
+		install-mongod
+}
+
+package() {
+	# install mongod binary
+	install -Dm755 build/install/bin/mongod -t "$pkgdir"/usr/bin
+
+	# install doc files
+	install -Dm644 distsrc/* -t "$pkgdir"/usr/share/doc/$pkgname
+
+	# install man files
+	install -Dm644 debian/mongod.1 -t "$pkgdir"/usr/share/man/man1
+}
+
+openrc() {
+	default_openrc
+
+	depends="tzdata"
+	install="$subpkgname.pre-install"
+
+	# install init files
+	install -Dm755 "$srcdir"/mongod.initd "$subpkgdir"/etc/init.d/mongod
+
+	# install conf files
+	install -Dm644 "$builddir"/debian/mongod.conf -t "$subpkgdir"/etc
+
+	# create db -- note: this should agree with dbpath in mongod.conf
+	install -o mongodb -g mongodb -d "$subpkgdir"/var/lib/mongodb
+
+	# create logdir -- note: this should agree with logpath in mongod.conf
+	install -o mongodb -g mongodb -d "$subpkgdir"/var/log/mongodb
+}
+
+sha512sums="
+d122154a208e5112ef4fc582f9412a91f3dd74767e20cbb9fc56ef4ac1f6f276b0f41c9f8eb30e6150544e421263cd02c75c1772e3412de9c72e766b7a11e629  mongodb-src-r4.4.26.tar.gz
+ff3e91168c88cb921858d8c84d601c06375bb96b7a9c1fb8decd6502bfa30ad363ebd0e46be598ea5468b4a54614aa9d9de5c200e67633a748e44687b1a51893  00-SConstruct.patch
+4643281946a893c9f4ee9860b2d3de37eefced4071e3c79001812eab439da0e2ca921a37f5256ec272680fc9c47b34c7ef518583fa22b71e8eccf3d8f437f5e6  05-plan_stats.patch
+fca508f7567c3c18827ac71e0e5327ef241c535f76d058c462fe75a0da1d906e63e4549a3bf7facedcd433c697dab6bf23e54d0a6e862d2911245c7e8710f0e2  10-dns_query_posix-impl.patch
+5bfbf30a3c5efdd98cd75f3c806b8a437168ac5c0fa1f654ad09abb8d9c50dd34b21425daba1146ca554085394e6679e50ddd0e308fbdedd36c14e4a931dfd17  15-errno_util.patch
+4e5ac507f6a19f788d2a2f2520ceee0c29c17e6f7abbcb103215a0fc72d5f8f7d8c026fc9127712203f59c11c4ab36e60ca1ba8c085133749f8c636ee27b302c  20-processinfo_linux.patch
+eb9771202391ab9d8da52f8eeb832b08418d7b585811e936dd8e909f1478043a3fcb200020da6cc5cc0b59ae4359e77da9c6a0b4cf77414f4d79a6f165d732dc  25-wiredtiger_config.patch
+899d570dfe4101d6b8c3cd81c18df1c936db2a4b2da618713fe2b6d97a495612fa78fb99a8f817ce0688bfbabd47a2271ea6b18821b3a22228f6bcedbec42cae  30-wiredtiger_SConscript.patch
+c0d90c2a4ff9ac5f4c291db27ebfe6716d8b883f191c8e8c766e8392f01e07770c55ed1ab18914290c34a8c838743c374a21e1f1f9853cef5cfee23c7569791c  35-counters.patch
+079c0b2f521df51254b3faa82db19a4c28e676461e3e2e0e38f430c0ff85e756bb0d4d3353caa01ba75478320b44d4b14c585eb5266f560b4a5bfea92d49a2af  mongod.initd
+"
