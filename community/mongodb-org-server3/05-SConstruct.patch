@@ -11,3 +11,12 @@
  # Needed for auth tests since key files are stored in git with mode 644.
  if not env.TargetOSIs('windows'):
      for keysuffix in [ "1" , "2" ]:
+@@ -2040,7 +2044,7 @@
+ 
+         # This warning was added in clang-5 and incorrectly flags our implementation of
+         # exceptionToStatus(). See https://bugs.llvm.org/show_bug.cgi?id=34804
+-        AddToCCFLAGSIfSupported(myenv, "-Wno-exceptions")
++        AddToCXXFLAGSIfSupported(myenv, "-Wno-exceptions")
+ 
+ 
+         # Check if we can set "-Wnon-virtual-dtor" when "-Werror" is set. The only time we can't set it is on

@@ -1,0 +1,10 @@
+--- a/src/mongo/util/container_size_helper.h
++++ b/src/mongo/util/container_size_helper.h
+@@ -29,6 +29,7 @@
+ 
+ #pragma once
+ 
++#include <cstdint>
+ #include <vector>
+ 
+ namespace mongo {

@@ -1,0 +1,13 @@
+--- a/src/third_party/wiredtiger/SConscript
++++ b/src/third_party/wiredtiger/SConscript
+@@ -31,10 +31,6 @@
+     conf.env.Append(CPPDEFINES=[
+         "HAVE_FALLOCATE"
+     ])
+-if conf.CheckFunc("sync_file_range"):
+-    conf.env.Append(CPPDEFINES=[
+-        "HAVE_SYNC_FILE_RANGE"
+-    ])
+ 
+ # GCC 8+ includes x86intrin.h in non-x64 versions of the compiler so limit the check to x64.
+ if env['TARGET_ARCH'] == 'x86_64' and conf.CheckCHeader('x86intrin.h'):
