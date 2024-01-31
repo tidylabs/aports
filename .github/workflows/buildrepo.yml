@@ -96,6 +96,7 @@ jobs:
       - name: Configure ccache
         run: |
           su ${ABUILD_USER} -c 'ccache -o base_dir="${HOME}" -o hash_dir=false'
+          su ${ABUILD_USER} -c "ccache -o remote_storage=${{ secrets.CCACHE_REMOTE_STORAGE }} -o reshare=true"
 
       - name: Build aarch64 cross compiler
         run: |
