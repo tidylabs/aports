@@ -2,7 +2,8 @@ name: Build aports
 
 on:
   push:
-    branches: [ "main" ]
+    branches: 
+      - main
   schedule:
     # Every day at 3am
     - cron: "0 3 * * *"
@@ -28,7 +29,7 @@ jobs:
           echo ALPINE_RELEASE_MAJOR="${ALPINE_RELEASE%.*}" >> $GITHUB_ENV
 
       - name: Install build dependencies
-        run: apk add --update alpine-sdk ccache doas rclone tar
+        run: apk add --update alpine-sdk ccache doas python3 rclone tar
 
       - name: Configure git user
         uses: tidylabs/action-git-config-user@v1
@@ -104,13 +105,11 @@ jobs:
 
       - name: Build 'community' repo (x86_64)
         run: |
-          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/python2/APKBUILD" abuild -F -r -k'
-          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/mongodb-org-server3/APKBUILD" abuild -F -r -k'
+          su ${ABUILD_USER} -c 'tidylabs-aports/scripts/buildrepo.py "${GITHUB_WORKSPACE}/tidylabs-aports"'
 
       - name: Build 'community' repo (aarch64)
         run: |
-          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/python2/APKBUILD" abuild -F -r -k'
-          su ${ABUILD_USER} -c 'APKBUILD="${GITHUB_WORKSPACE}/tidylabs-aports/community/mongodb-org-server3/APKBUILD" abuild -F -r -k'
+          su ${ABUILD_USER} -c 'tidylabs-aports/scripts/buildrepo.py "${GITHUB_WORKSPACE}/tidylabs-aports"'
         env:
           CHOST: aarch64
           EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
