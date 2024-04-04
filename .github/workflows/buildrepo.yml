@@ -1,6 +1,7 @@
 name: Build aports
 
 on:
+  workflow_dispatch:
   push:
     branches: 
       - main
@@ -18,41 +19,34 @@ jobs:
       options: --pull always
     environment: release
     env:
-      ABUILD_USER: builder
+      PACKAGER: opensource@tidylabs.app
       USE_CCACHE: 1
 
     steps:
       - name: Get Alpine release version
+        id: alpine-release
         run: |
           ALPINE_RELEASE="$(cat /etc/alpine-release)"
-          echo ALPINE_RELEASE_MINOR="${ALPINE_RELEASE}" >> $GITHUB_ENV
-          echo ALPINE_RELEASE_MAJOR="${ALPINE_RELEASE%.*}" >> $GITHUB_ENV
+          echo version_minor="${ALPINE_RELEASE}" >> "$GITHUB_OUTPUT"
+          echo version_major="${ALPINE_RELEASE%.*}" >> "$GITHUB_OUTPUT"
 
       - name: Install build dependencies
         run: apk add --update alpine-sdk ccache doas python3 rclone tar
 
       - name: Configure git user
-        uses: tidylabs/action-git-config-user@v1
+        uses: tidylabs/action-git-config-user@v2
 
       - name: Checkout alpinelinux/aports
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: alpinelinux/aports
-          ref: v${{ env.ALPINE_RELEASE_MINOR }}
-          path: aports
+          ref: v${{ steps.alpine-release.outputs.version_minor }}
+          path: alpinelinux-aports
 
       - name: Checkout tidylabs/aports
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: tidylabs-aports
-
-      - name: Create user for abuild
-        run: |
-          adduser -h "$GITHUB_WORKSPACE" -D $ABUILD_USER
-          adduser ${ABUILD_USER} abuild
-
-          adduser ${ABUILD_USER} wheel
-          echo "permit nopass :wheel" >> "/etc/doas.d/doas.conf"
 
       - name: Configure rclone
         run: |
@@ -61,58 +55,67 @@ jobs:
           echo "${{ secrets.RCLONE_CONFIG }}" > "${RCLONE_CONFIG}"
 
       - name: Restore build cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             /var/cache/apk
             /var/cache/distfiles
             .cache
             .ccache
-          key: aports-${{ env.ALPINE_RELEASE_MINOR }}-${{ github.run_id }}
+          key: aports-${{ steps.alpine-release.outputs.version_minor }}-${{ github.run_id }}
           restore-keys: |
-            aports-${{ env.ALPINE_RELEASE_MINOR }}
-            aports-${{ env.ALPINE_RELEASE_MAJOR }}
+            aports-${{ steps.alpine-release.outputs.version_minor }}
+            aports-${{ steps.alpine-release.outputs.version_major }}
 
       - name: Download packages
         run: |
-          rclone mkdir -v remote:v${ALPINE_RELEASE_MAJOR}/
-          rclone sync -v remote:v${ALPINE_RELEASE_MAJOR}/ packages/
+          rclone mkdir -v remote:v${VERSION_MAJOR}/
+          rclone sync -v remote:v${VERSION_MAJOR}/ packages/
+        env:
+          VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
 
       - name: Setup signing keys
         run: |
-          PACKAGER_PRIVKEY="${GITHUB_WORKSPACE}/.abuild/opensource@tidylabs.app-e0bb7fa4.rsa"
+          MODULUS_HASH=$( \
+            echo "${{ secrets.PACKAGER_PRIVKEY }}" \
+            | openssl rsa -modulus -noout \
+            | cut -d "=" -f2 \
+            | openssl md5 \
+            | awk '{print substr($2,0,8)}' \
+          )
+          PACKAGER_PRIVKEY="${HOME}/.abuild/${PACKAGER}-${MODULUS_HASH}.rsa"
           mkdir -p "${PACKAGER_PRIVKEY%/*}"
           echo "${{ secrets.PACKAGER_PRIVKEY }}" > "${PACKAGER_PRIVKEY}"
-          echo "PACKAGER_PRIVKEY=${PACKAGER_PRIVKEY}" >> "${GITHUB_WORKSPACE}/.abuild/abuild.conf"
+          echo "PACKAGER_PRIVKEY=${PACKAGER_PRIVKEY}" >> "${HOME}/.abuild/abuild.conf"
 
-          PACKAGER_PUBKEY="/etc/apk/keys/opensource@tidylabs.app-e0bb7fa4.rsa.pub"
+          PACKAGER_PUBKEY="/etc/apk/keys/$(basename ${PACKAGER_PRIVKEY}).pub"
           mkdir -p "${PACKAGER_PUBKEY%/*}"
-          echo "${{ secrets.PACKAGER_PUBKEY }}" > "${PACKAGER_PUBKEY}"
-          echo "PACKAGER_PUBKEY=${PACKAGER_PUBKEY}" >> "${GITHUB_WORKSPACE}/.abuild/abuild.conf"
-
-      - name: Fix filesystem permissions
-        run: |
-          chown -R ${ABUILD_USER}:${ABUILD_USER} "${GITHUB_WORKSPACE}"
+          openssl rsa -in "${PACKAGER_PRIVKEY}" -pubout -out "${PACKAGER_PUBKEY}"
+          echo "PACKAGER_PUBKEY=${PACKAGER_PUBKEY}" >> "${HOME}/.abuild/abuild.conf"
 
       - name: Configure ccache
         run: |
-          su ${ABUILD_USER} -c 'ccache -o base_dir="${HOME}" -o hash_dir=false'
-          su ${ABUILD_USER} -c "ccache -o remote_storage=${{ secrets.CCACHE_REMOTE_STORAGE }} -o reshare=true"
+          ccache -o base_dir="${GITHUB_WORKSPACE}" \
+            -o hash_dir=false \
+            -o remote_storage=${{ secrets.CCACHE_REMOTE_STORAGE }} \
+            -o reshare=true
 
       - name: Build aarch64 cross compiler
-        run: |
-          su ${ABUILD_USER} -c 'tidylabs-aports/scripts/bootstrap-cc.sh aarch64'
+        run: tidylabs-aports/scripts/bootstrap-cc.sh aarch64
+        env:
+          APORTSDIR: alpinelinux-aports
 
       - name: Build 'community' repo (x86_64)
-        run: |
-          su ${ABUILD_USER} -c 'tidylabs-aports/scripts/buildrepo.py "${GITHUB_WORKSPACE}/tidylabs-aports"'
+        run: tidylabs-aports/scripts/buildrepo.py tidylabs-aports/community
 
       - name: Build 'community' repo (aarch64)
-        run: |
-          su ${ABUILD_USER} -c 'tidylabs-aports/scripts/buildrepo.py "${GITHUB_WORKSPACE}/tidylabs-aports"'
+        run: tidylabs-aports/scripts/buildrepo.py tidylabs-aports/community
         env:
           CHOST: aarch64
           EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
 
       - name: Upload packages
-        run: rclone sync -v packages/ remote:v${ALPINE_RELEASE_MAJOR}/
+        run: rclone sync -v packages/ remote:v${VERSION_MAJOR}/
+        env:
+          VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
+
