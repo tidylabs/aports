@@ -23,6 +23,9 @@ jobs:
       USE_CCACHE: 1
 
     steps:
+      - name: Change root's home directory (/github/home)
+        run: sed -i "s|/root|$HOME|" /etc/passwd
+
       - name: Get Alpine release version
         id: alpine-release
         run: |
@@ -60,8 +63,8 @@ jobs:
           path: |
             /var/cache/apk
             /var/cache/distfiles
-            .cache
-            .ccache
+            ~/.cache
+            ~/.ccache
           key: aports-${{ steps.alpine-release.outputs.version_minor }}-${{ github.run_id }}
           restore-keys: |
             aports-${{ steps.alpine-release.outputs.version_minor }}
