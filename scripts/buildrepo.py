@@ -136,4 +136,7 @@ if __name__ == "__main__":
     packages_sorted = build_order(packages_by_name.values())
     for pkg in packages_sorted:
         os.putenv("APKBUILD", pkg.path)
+        subprocess.run(["ccache", "-z"])
         subprocess.run(["abuild", "-c", "-r", "-F", "-k"])
+        subprocess.run(["ccache", "-s", "-vv"])
+

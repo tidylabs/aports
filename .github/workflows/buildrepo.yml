@@ -95,10 +95,11 @@ jobs:
 
       - name: Configure ccache
         run: |
-          ccache -o base_dir="${GITHUB_WORKSPACE}" \
+          ccache -o "base_dir=${GITHUB_WORKSPACE}" \
             -o hash_dir=false \
-            -o remote_storage=${{ secrets.CCACHE_REMOTE_STORAGE }} \
+            -o "remote_storage=${{ secrets.CCACHE_REMOTE_STORAGE }}" \
             -o reshare=true
+          ccache -p
 
       - name: Build aarch64 cross compiler
         run: tidylabs-aports/scripts/bootstrap-cc.sh aarch64
