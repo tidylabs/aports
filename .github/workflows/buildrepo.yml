@@ -21,13 +21,8 @@ jobs:
     env:
       PACKAGER: opensource@tidylabs.app
       USE_CCACHE: 1
-      CCACHE_DEBUG: 1
-      CCACHE_DEBUGDIR: /github/home/ccache-logs
 
     steps:
-      - name: Change root's home directory (/github/home)
-        run: sed -i "s|/root|$HOME|" /etc/passwd
-
       - name: Get Alpine release version
         id: alpine-release
         run: |
@@ -100,6 +95,7 @@ jobs:
 
       - name: Configure ccache
         run: |
+          mkdir -p "${HOME}/.ccache"
           ccache -o "base_dir=${GITHUB_WORKSPACE}" \
             -o hash_dir=false \
             -o "remote_storage=${{ secrets.CCACHE_REMOTE_STORAGE }}" \
@@ -124,13 +120,3 @@ jobs:
         run: rclone sync -v packages/ remote:v${VERSION_MAJOR}/
         env:
           VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
-      
-      - name: Upload ccache logs
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: ccache-logs
-          path: /github/home/ccache-logs
-
-      
-
