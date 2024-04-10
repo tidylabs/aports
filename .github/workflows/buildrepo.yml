@@ -70,7 +70,7 @@ jobs:
       - name: Download packages
         run: |
           rclone mkdir -v remote:v${VERSION_MAJOR}/
-          rclone sync -v remote:v${VERSION_MAJOR}/ packages/
+          rclone sync -v remote:v${VERSION_MAJOR}/ ~/packages/
         env:
           VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
 
@@ -117,6 +117,6 @@ jobs:
           EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
 
       - name: Upload packages
-        run: rclone sync -v packages/ remote:v${VERSION_MAJOR}/
+        run: rclone sync -v ~/packages/ remote:v${VERSION_MAJOR}/
         env:
           VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
