@@ -1,6 +1,6 @@
 # Contributor: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
-pkgname=mongodb-org-server3
+pkgname=mongodb-org-server3.6
 pkgver=3.6.23
 pkgrel=1
 pkgdesc="MongoDB database server"
