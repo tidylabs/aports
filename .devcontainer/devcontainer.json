@@ -1,0 +1,13 @@
+{
+	"name": "Alpine",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
+	"containerEnv": {
+		"USE_CCACHE": "1",
+		"CCACHE_BASEDIR": "${containerWorkspaceFolder}",
+		"CCACHE_NOHASHDIR": "true",
+		"CCACHE_MAXSIZE": "10G",
+		"CCACHE_REMOTE_STORAGE": "${localEnv:CCACHE_REMOTE_STORAGE}"
+	}
+}
