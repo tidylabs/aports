@@ -3,6 +3,7 @@
 	"build": {
 		"dockerfile": "Dockerfile"
 	},
+	"postCreateCommand": "SUDO= abuild-keygen -a -i -n",
 	"containerEnv": {
 		"USE_CCACHE": "1",
 		"CCACHE_BASEDIR": "${containerWorkspaceFolder}",
