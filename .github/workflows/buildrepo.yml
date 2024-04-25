@@ -61,7 +61,6 @@ jobs:
             /var/cache/apk
             /var/cache/distfiles
             ~/.cache
-            ~/.ccache
           key: aports-${{ steps.alpine-release.outputs.version_minor }}-${{ github.run_id }}
           restore-keys: |
             aports-${{ steps.alpine-release.outputs.version_minor }}
@@ -96,10 +95,10 @@ jobs:
       - name: Configure ccache
         run: |
           mkdir -p "${HOME}/.ccache"
-          ccache -o "base_dir=${GITHUB_WORKSPACE}" \
-            -o hash_dir=false \
-            -o "remote_storage=${{ secrets.CCACHE_REMOTE_STORAGE }}" \
-            -o reshare=true
+          cp tidylabs-aports/ccache.conf "${HOME}/.ccache/."
+          ccache \
+            -o base_dir="${GITHUB_WORKSPACE}" \
+            -o remote_storage="${{ secrets.CCACHE_REMOTE_STORAGE }}"
           ccache -p
 
       - name: Build aarch64 cross compiler

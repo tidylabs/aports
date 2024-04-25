@@ -7,8 +7,8 @@
 	"containerEnv": {
 		"USE_CCACHE": "1",
 		"CCACHE_BASEDIR": "${containerWorkspaceFolder}",
-		"CCACHE_NOHASHDIR": "true",
-		"CCACHE_MAXSIZE": "10G",
+		"CCACHE_CONFIGPATH": "${containerWorkspaceFolder}/ccache.conf",
+		"CCACHE_MAXSIZE": "20G",
 		"CCACHE_REMOTE_STORAGE": "${localEnv:CCACHE_REMOTE_STORAGE}"
 	}
 }
