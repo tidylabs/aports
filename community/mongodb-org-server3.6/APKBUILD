@@ -2,7 +2,7 @@
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=mongodb-org-server3.6
 pkgver=3.6.23
-pkgrel=1
+pkgrel=2
 pkgdesc="MongoDB database server"
 url="http://www.mongodb.org"
 license="https://www.mongodb.com/licensing/server-side-public-license"
@@ -72,7 +72,9 @@ build() {
 		--variables-files=etc/scons/propagate_shell_environment.vars \
 		CC=$CC \
 		CXX=$CXX \
-		CXXFLAGS="-w" \
+		CFLAGS="$CFLAGS -Wno-psabi -w" \
+		CXXFLAGS="$CXXFLAGS -Wno-psabi -w" \
+		LINKFLAGS="$LDFLAGS" \
 		TARGET_ARCH=$CTARGET_ARCH \
 		VERBOSE=off \
 		mongod
