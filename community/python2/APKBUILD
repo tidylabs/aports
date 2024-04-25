@@ -1,5 +1,5 @@
-# Contributor: Justin Klaassen <6700251+jck112@users.noreply.github.com>
-# Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
+# Contributor: Justin Klaassen <justin@tidylabs.app>
+# Maintainer: Justin Klaassen <justin@tidylabs.app>
 pkgname=python2
 pkgver=2.7.18
 pkgrel=3
