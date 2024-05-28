@@ -4,8 +4,6 @@ RUN apk --update add \
     alpine-sdk \
     ccache \
     doas \
-    mandoc \
-    man-pages \
     openssh-keygen \
     python3-dev \
     rclone \
