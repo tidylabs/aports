@@ -1,0 +1,27 @@
+# Contributor: Justin Klaassen <justin@tidylabs.app>
+# Maintainer: Justin Klaassen <justin@tidylabs.app>
+pkgname=unifi
+pkgver=8.1.127
+pkgrel=0
+pkgdesc="Ubiquiti UniFi server"
+url="https://www.ui.com"
+license="https://www.ui.com/eula"
+arch="noarch"
+options="!check"
+depends="
+	java-jre-headless
+	mongodb-org-server~=4.4
+	"
+install="
+	$pkgname.pre-install
+	$pkgname.pre-upgrade
+	$pkgname.pre-deinstall
+	"
+builddir="$srcdir"
+
+package() {
+	install -d "$pkgdir"/usr/lib/unifi
+}
+
+sha512sums="
+"
