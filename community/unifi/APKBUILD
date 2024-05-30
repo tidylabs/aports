@@ -2,13 +2,18 @@
 # Maintainer: Justin Klaassen <justin@tidylabs.app>
 pkgname=unifi
 pkgver=8.1.127
-pkgrel=0
+pkgrel=1
 pkgdesc="Ubiquiti UniFi server"
 url="https://www.ui.com"
 license="https://www.ui.com/eula"
 arch="noarch"
 options="!check"
-depends="
+pkgusers="unifi"
+pkggroups="unifi"
+subpackages="
+	$pkgname-openrc
+	"
+openrc_depends="
 	java-jre-headless
 	mongodb-org-server~=4.4
 	"
@@ -16,12 +21,20 @@ install="
 	$pkgname.pre-install
 	$pkgname.pre-upgrade
 	$pkgname.pre-deinstall
+	$pkgname-openrc.pre-install
+	"
+source="
+	unifi.initd
 	"
 builddir="$srcdir"
 
 package() {
 	install -d "$pkgdir"/usr/lib/unifi
+
+	# install init files
+	install -Dm755 "$srcdir"/unifi.initd "$pkgdir"/etc/init.d/unifi
 }
 
 sha512sums="
+46f2fde047744243a149e4b1f3d02e71087dd1969fc5aaa382b61cf5e5ab0afe64e37e2e3385af0d66a0cefdf65d01a2eb5072c8300b1af6d351de59f7f11440  unifi.initd
 "

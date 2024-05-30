@@ -1,0 +1,14 @@
+#!/sbin/openrc-run
+
+name="unifi"
+description="Ubiquiti UniFi Network application"
+command="/usr/bin/java"
+command_args="-jar lib/ace.jar start"
+command_user="unifi:unifi"
+directory="/usr/lib/unifi"
+pidfile="/var/run/unifi/unifi.pid"
+
+depend() {
+    need net
+    after firewall
+}
