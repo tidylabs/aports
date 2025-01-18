@@ -21,7 +21,7 @@ jobs:
       - name: Get alpine version
         id: alpine-release
         run: |
-          ALPINE_RELEASE="3.19.1"
+          ALPINE_RELEASE="3.21.2"
           echo version_minor="${ALPINE_RELEASE}" >> "$GITHUB_OUTPUT"
           echo version_major="${ALPINE_RELEASE%.*}" >> "$GITHUB_OUTPUT"
 
