@@ -51,8 +51,7 @@ abuild -F -r -k
 # full cross GCC
 APKBUILD="${APORTSDIR}/main/gcc/APKBUILD" \
 BOOTSTRAP=nobase \
-EXTRADEPENDS_TARGET="musl-dev" \
-LANG_ADA=false \
+EXTRADEPENDS_TARGET="musl-dev libucontext-dev" \
 abuild -F -r -k
 
 # cross build-base
