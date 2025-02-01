@@ -2,7 +2,7 @@
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=mongodb-org-server4.4
 pkgver=4.4.26
-pkgrel=1
+pkgrel=2
 pkgdesc="MongoDB database server"
 url="http://www.mongodb.org"
 license="https://www.mongodb.com/licensing/server-side-public-license"
@@ -36,6 +36,7 @@ source="
 	25-wiredtiger_config.patch
 	30-wiredtiger_SConscript.patch
 	35-counters.patch
+	40-moduleconfig-importlib.patch
 
 	mongod.initd
 	"
@@ -55,7 +56,7 @@ prepare() {
 
 	# install buildscript python3 dependencies
 	CC="$BUILDCC" CXX="$BUILDCXX" \
-		python3 -m pip install -r etc/pip/compile-requirements.txt
+		python3 -m pip install setuptools -r etc/pip/compile-requirements.txt
 }
 
 build() {
@@ -115,5 +116,6 @@ fca508f7567c3c18827ac71e0e5327ef241c535f76d058c462fe75a0da1d906e63e4549a3bf7face
 eb9771202391ab9d8da52f8eeb832b08418d7b585811e936dd8e909f1478043a3fcb200020da6cc5cc0b59ae4359e77da9c6a0b4cf77414f4d79a6f165d732dc  25-wiredtiger_config.patch
 899d570dfe4101d6b8c3cd81c18df1c936db2a4b2da618713fe2b6d97a495612fa78fb99a8f817ce0688bfbabd47a2271ea6b18821b3a22228f6bcedbec42cae  30-wiredtiger_SConscript.patch
 c0d90c2a4ff9ac5f4c291db27ebfe6716d8b883f191c8e8c766e8392f01e07770c55ed1ab18914290c34a8c838743c374a21e1f1f9853cef5cfee23c7569791c  35-counters.patch
+3ade7cfa725e8adbc72ea6db4089ab996f285433e324dc3d22b2eb7679b1a6d6c56fff0c1cbfa3d16c8a80eb38eb53c79146aaebba62236db847bfb8ad68a1b8  40-moduleconfig-importlib.patch
 079c0b2f521df51254b3faa82db19a4c28e676461e3e2e0e38f430c0ff85e756bb0d4d3353caa01ba75478320b44d4b14c585eb5266f560b4a5bfea92d49a2af  mongod.initd
 "
