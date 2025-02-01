@@ -2,7 +2,7 @@
 # Maintainer: Justin Klaassen <6700251+jck112@users.noreply.github.com>
 pkgname=python2
 pkgver=2.7.18
-pkgrel=3
+pkgrel=4
 pkgdesc="A high-level scripting language"
 url="https://www.python.org"
 license="https://docs.python.org/2/license.html"
@@ -33,6 +33,7 @@ source="
 	15_Makefile.pre.in-compileall.py.patch
 	20_cve-2021-3177.patch
 	25_hashopenssl.patch
+	30_ssl-ERR_get_state.patch
 	"
 builddir="$srcdir/Python-$pkgver"
 _pydir="python${pkgver%.*}" # e.g. 'python2.7'
@@ -111,4 +112,5 @@ d8c2ffa3bda43f67c017510da8c5b2a1a05f2e05a66d2801cb2c2fc3971ef01346a2516648c7f760
 03ce1c69f9dad230b8d167e47137ec8a43b76502716dd25427c367b4da693db094802d4e8bd93dcddca36ea43bb20d81c54316c7b9576fe7e5f72bc337a5798e  15_Makefile.pre.in-compileall.py.patch
 ebba212af86f095a620dd178cc355f0fae57e88deea6bbf6bfa745134bc0f5f48f8081131992f4f7fc69f736baaf243e600938833f7a1e73ada63dd9e89d1916  20_cve-2021-3177.patch
 d3af4d484fe0e082af189464b6c4b74193c3bfcd9a5a825ee85c6c7eb0cebeb6bccd00fe82bf5233282ab854460e3a5b27e547f0fc4b125485c3283deb85bfde  25_hashopenssl.patch
+20954957a4bbb468a893d901536b4aebc87c2ca663ab31542f7cfa4090ce993c36e81fb6d053d332ab117da706f8de95862669d6a6f699b97c01c7715507608b  30_ssl-ERR_get_state.patch
 "

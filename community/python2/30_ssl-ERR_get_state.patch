@@ -1,0 +1,11 @@
+--- a/Modules/_ssl.c
++++ b/Modules/_ssl.c
+@@ -591,8 +591,6 @@
+     self->handshake_done = 0;
+     Py_INCREF(sslctx);
+ 
+-    /* Make sure the SSL error state is initialized */
+-    (void) ERR_get_state();
+     ERR_clear_error();
+ 
+     PySSL_BEGIN_ALLOW_THREADS
