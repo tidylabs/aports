@@ -3,13 +3,13 @@
 pkgname=tidylabs-keys
 pkgver=1.0
 pkgrel=0
-pkgdesc="Public keys for Tidy Labs' Alpine Linux packages"
+pkgdesc="Public keys for Tidy Labs Alpine Linux packages"
 url="https://github.com/tidylabs/aports"
 license="MIT"
 arch="noarch"
 options="!check"
 source="
-	opensource@tidylabs.app-5ed2c454.rsa.pub
+	alpine-dev@tidylabs.net-5ed2c454.rsa.pub
 	"
 
 package() {
@@ -20,5 +20,5 @@ package() {
 }
 
 sha512sums="
-82051f79b7e9c98b8b110bb82eefd743708a3c1dcbcbf256ca3dc4b029f62621a9050ab9d12106ac248ee8d427884978f99066d328973ba7f861c4a5f95bd745  opensource@tidylabs.app-5ed2c454.rsa.pub
+82051f79b7e9c98b8b110bb82eefd743708a3c1dcbcbf256ca3dc4b029f62621a9050ab9d12106ac248ee8d427884978f99066d328973ba7f861c4a5f95bd745  alpine-dev@tidylabs.net-5ed2c454.rsa.pub
 "

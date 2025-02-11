@@ -32,7 +32,7 @@ jobs:
       image: alpine:${{ needs.alpine.outputs.version_minor }}
     environment: release
     env:
-      PACKAGER: opensource@tidylabs.app
+      PACKAGER: alpine-dev@tidylabs.net
       USE_CCACHE: 1
     steps:
       - name: Install build dependencies
