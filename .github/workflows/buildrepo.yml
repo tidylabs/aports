@@ -12,29 +12,42 @@ on:
 concurrency: buildrepo
 
 jobs:
-  alpine:
+  alpine-image:
     runs-on: ubuntu-latest
     outputs:
-      version_minor: ${{ steps.alpine-release.outputs.version_minor }}
-      version_major: ${{ steps.alpine-release.outputs.version_major }}
+      digest: ${{ steps.image-info.outputs.digest }}
     steps:
-      - name: Get alpine version
-        id: alpine-release
+      - name: Checkout tidylabs/aports
+        uses: actions/checkout@v4
+
+      - name: Get Alpine image digest
+        id: image-info
         run: |
-          ALPINE_RELEASE="3.21.2"
-          echo version_minor="${ALPINE_RELEASE}" >> "$GITHUB_OUTPUT"
-          echo version_major="${ALPINE_RELEASE%.*}" >> "$GITHUB_OUTPUT"
+          IMAGE=$( \
+            grep -Eo -m 1 \
+              -e "alpine(:[0-9][.0-9]*)(@sha256:[0-9A-Za-z]+)?" \
+              .devcontainer/Dockerfile \
+          )
+          docker pull "${IMAGE}"
+          docker inspect --format="digest={{index .RepoDigests 0}}" "${IMAGE}" >> "$GITHUB_OUTPUT"
 
   buildrepo:
     runs-on: ubuntu-latest
-    needs: alpine
+    needs: alpine-image
     container:
-      image: alpine:${{ needs.alpine.outputs.version_minor }}
+      image: ${{ needs.alpine-image.outputs.digest }}
     environment: release
     env:
       PACKAGER: alpine-dev@tidylabs.net
       USE_CCACHE: 1
     steps:
+      - name: Get Alpine version
+        id: alpine-release
+        run: |
+          ALPINE_RELEASE="$(cat /etc/alpine-release)"
+          echo version_minor="${ALPINE_RELEASE}" >> "$GITHUB_OUTPUT"
+          echo version_major="${ALPINE_RELEASE%.*}" >> "$GITHUB_OUTPUT"
+
       - name: Install build dependencies
         run: apk add --update alpine-sdk ccache doas python3 rclone tar
 
@@ -45,7 +58,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: alpinelinux/aports
-          ref: v${{ needs.alpine.outputs.version_minor }}
+          ref: v${{ steps.alpine-release.outputs.version_minor }}
           path: alpinelinux-aports
 
       - name: Checkout tidylabs/aports
@@ -66,17 +79,17 @@ jobs:
             /var/cache/apk
             /var/cache/distfiles
             ~/.cache
-          key: aports-${{ needs.alpine.outputs.version_minor }}-${{ github.run_id }}
+          key: aports-${{ steps.alpine-release.outputs.version_minor }}-${{ github.run_id }}
           restore-keys: |
-            aports-${{ needs.alpine.outputs.version_minor }}
-            aports-${{ needs.alpine.outputs.version_major }}
+            aports-${{ steps.alpine-release.outputs.version_minor }}
+            aports-${{ steps.alpine-release.outputs.version_major }}
 
       - name: Download packages
         run: |
           rclone mkdir -v remote:v${VERSION_MAJOR}/
           rclone sync -v remote:v${VERSION_MAJOR}/ ~/packages/
         env:
-          VERSION_MAJOR: ${{ needs.alpine.outputs.version_major }}
+          VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
 
       - name: Setup signing keys
         run: |
@@ -123,4 +136,4 @@ jobs:
       - name: Upload packages
         run: rclone sync -v ~/packages/ remote:v${VERSION_MAJOR}/
         env:
-          VERSION_MAJOR: ${{ needs.alpine.outputs.version_major }}
+          VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
