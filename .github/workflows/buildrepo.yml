@@ -3,7 +3,7 @@ name: Build aports
 on:
   workflow_dispatch:
   push:
-    branches: 
+    branches:
       - main
   schedule:
     # Every day at 3am
@@ -37,6 +37,8 @@ jobs:
     container:
       image: ${{ needs.alpine-image.outputs.digest }}
     environment: release
+    permissions:
+      contents: write
     env:
       PACKAGER: alpine-dev@tidylabs.net
       USE_CCACHE: 1
@@ -137,3 +139,19 @@ jobs:
         run: rclone sync -v ~/packages/ remote:v${VERSION_MAJOR}/
         env:
           VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
+
+      - name: Flatten packages
+        run: |
+          REPODIR=~/packages
+          for path in $(find "$REPODIR" -type f); do
+            relpath="${path#$REPODIR/}"
+            flatpath="${relpath//\//+}"
+            mv "$path" "$flatpath"
+          done
+
+      - name: Publish release w/ packages
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.alpine-release.outputs.version_major }}
+          target_commitish: ${{ github.sha }}
+          files: ~/packages/*
