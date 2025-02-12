@@ -51,7 +51,7 @@ jobs:
           echo version_major="${ALPINE_RELEASE%.*}" >> "$GITHUB_OUTPUT"
 
       - name: Install build dependencies
-        run: apk add --update alpine-sdk ccache doas python3 rclone tar
+        run: apk add --update alpine-sdk ccache doas github-cli python3 rclone tar
 
       - name: Configure git user
         uses: tidylabs/action-git-config-user@v2
@@ -88,9 +88,24 @@ jobs:
 
       - name: Download packages
         run: |
-          rclone mkdir -v remote:v${VERSION_MAJOR}/
-          rclone sync -v remote:v${VERSION_MAJOR}/ ~/packages/
+          REPODIR=~/packages
+          gh release download v${VERSION_MAJOR} -D "$REPODIR" || true
+
+          for path in $(find "$REPODIR" -type f); do
+            file="${path#$REPODIR/}"
+            repo="${file%%+*}"
+
+            file="${file#*+}"
+            arch="${file%%+*}"
+
+            file="${file#*+}"
+
+            mkdir -p "$REPODIR/$repo/$arch"
+            mv "$path" "$REPODIR/$repo/$arch/$file"
+          done
         env:
+          GH_REPO: ${{ github.repository }}
+          GH_TOKEN: ${{ github.token }}
           VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
 
       - name: Setup signing keys
@@ -134,11 +149,6 @@ jobs:
         env:
           CHOST: aarch64
           EXTRADEPENDS_TARGET: libgcc libstdc++ musl-dev
-
-      - name: Upload packages
-        run: rclone sync -v ~/packages/ remote:v${VERSION_MAJOR}/
-        env:
-          VERSION_MAJOR: ${{ steps.alpine-release.outputs.version_major }}
 
       - name: Flatten packages
         run: |
